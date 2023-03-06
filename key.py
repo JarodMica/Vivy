@@ -1,2 +1,2 @@
-EL_KEY = 'Enter Eleven Labs API Key'
-GPT_KEY = 'Enter ChatGPT API Key'
+EL_KEY = 'Enter Your Eleven Labs API Key'
+GPT_KEY = 'Enter Your ChatGPT API Key'
