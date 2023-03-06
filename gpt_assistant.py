@@ -1,5 +1,4 @@
 import json
-import key
 import speech_recognition as sr
 from elevenlabslib import *
 import os
@@ -9,17 +8,21 @@ import pyttsx3
 
 class ChatGPT:
     def __init__(self, personality, voice_name="Vivy"):
+        # Read in keys
+        with open("key.txt", "r") as file:
+            keys = json.load(file)
+
         # pyttsx3 Set-up
         self.engine = pyttsx3.init()
         self.voices = self.engine.getProperty('voices') 
         self.engine.setProperty('voice', self.voices[1].id) # 0 for male, 1 for female
 
         # GPT Set-Up
-        self.GPT_KEY = key.GPT_KEY 
+        self.GPT_KEY = keys['GPT_KEY']
         openai.api_key = self.GPT_KEY
 
         # Eleven Labs Set-up
-        self.EL_KEY = key.EL_KEY #Eleven labs
+        self.EL_KEY = keys['EL_KEY'] #Eleven labs
         self.user = ElevenLabsUser(f"{self.EL_KEY}")
         self.voice = self.user.get_voices_by_name(voice_name)[0]  # This is a list because multiple voices can have the same name
 
@@ -44,7 +47,7 @@ class ChatGPT:
         print("Initiated: ")
         while True:
             with self.mic as source:
-                self.r.adjust_for_ambient_noise(source, duration=0.2)
+                self.r.adjust_for_ambient_noise(source, duration=0.5)
                 audio = self.r.listen(source)
                 try:
                     user_input = self.r.recognize_google(audio)
@@ -227,7 +230,7 @@ class ChatGPT:
     def listen_for_voice(self):
         with self.mic as source:
                 print("\n Listening...")
-                self.r.adjust_for_ambient_noise(source, duration=0.2)
+                self.r.adjust_for_ambient_noise(source, duration=0.5)
                 audio = self.r.listen(source)
         print("no longer listening")
         return audio
