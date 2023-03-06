@@ -48,7 +48,7 @@ chatbot.chat(save_foldername, useEL = False)
 ```
 
 #### What is happening here and how to modify it to your own assistant:
-1. You set the ```personality``` by inputing the name of your text file and then editting the contents of the txt file name that is specified.  What this does is "prime" the gpt-3.5 conversation and sets the **personality** of the bot.  All of your prompts must go in the prompts folder and I have some examples in there already.
+1. You set the ```personality``` by inputing the name of your text file and then editting the contents of the txt file name that is specified.  What this does is "prime" the ChatGPT conversation and sets the **personality** of the bot.  All of your prompts must go in the prompts folder and I have some examples in there already.
 2. If you're using Eleven Labs for voice generation, change ```voicename``` to whatever voice you want that is available to you in Eleven Labs.
 3. Change ```save_foldername``` to whatever folder name you want your conversations to be stored as.  It will be placed in a "conversations" folder where you will find the name of you folder in.
 
