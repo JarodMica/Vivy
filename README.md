@@ -14,12 +14,16 @@ In general, this is how it work:
 If you say quit, it will quit.
 
 #### The following libraries are required to run the ChatGPT class:
-- speech_recognition ```pip install SpeechRecognition```
-- elevenlabslibos ```pip install elevenlabslib```
-- openai ```pip install openai```
-- pyttsx3 ```pip install pyttsx3```
+- ```pip install SpeechRecognition```
+- ```pip install elevenlabslib```
+- ```pip install openai```
+- ```pip install pyttsx3```
 
-As well, you will need to have an ``` import key ``` line as well in order to import your API keys.
+As well, you must set up your API keys inside of ```key.py```.  If you don't this won't work at all.  To get the openAI key, open up an account at https://openai.com/blog/openai-api and the get an Eleven Labs API key, you need to set-up an account at https://beta.elevenlabs.io/ (this is a paid option).
+
+(additionally, if you don't have python installed on your device, there are a bajillion tutorials on youtube to how to do this, so go check those out if you don't have it installed!)
+
+## Once you've done the previous stuff
 
 Here's a quick example of a python script that works with the ChatGPT class defined in gpt_assistant:
 ```
