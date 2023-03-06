@@ -41,7 +41,7 @@ directory = os.path.join(current_directory,'prompts', personality)
 voicename = "Rem"
 
 # name of folder to save conversations into
-save_foldername = "rem"
+save_foldername = "roleplay"
 
 # The magic bot:
 chatbot = ChatGPT(directory, voicename)
