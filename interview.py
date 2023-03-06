@@ -6,6 +6,7 @@ current_directory = os.getcwd()
 personality = "interview.txt"
 directory = os.path.join(current_directory,'prompts', personality)
 system_change = "interview_end.txt"
+change_directory = os.path.join(current_directory,'prompt', system_change)
 
 # Set-up Eleven Labs voice
 voicename = "Eren"
@@ -15,5 +16,5 @@ save_foldername = "interview"
 
 # The magic bot:
 chatbot = ChatGPT(directory, voicename)
-chatbot.interview(save_foldername, system_change, useEL = False)
+chatbot.interview(save_foldername, change_directory, useEL = False)
 
