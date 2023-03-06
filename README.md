@@ -1,6 +1,6 @@
 # QUICK DESCRIPTION:
 
-The personal_assistant repo utilizes OpenAI's GPT-3.5 Turbo model to engage in personalized conversations with users, catering to their preferred communication style. As GPT-3.5 Turbo serves as the foundation for ChatGPT, this project essentially shares its underlying model. Ultimately, the aim of this project is to develop a personal assistant that emulates human-like interactions. As the project is a work in progress, its features will expand as I continue to refine and iterate on the concept.
+This repo utilizes OpenAI's GPT-3.5 Turbo model to engage in personalized conversations with users, catering to their preferred communication style. As GPT-3.5 Turbo serves as the foundation for ChatGPT, this project essentially shares its underlying model. Ultimately, the aim of this project is to develop a personal assistant that emulates human-like interactions. As the project is a work in progress, its features will expand as I continue to refine and iterate on the concept.
 
 The fastest way to try these assistants would be to setup your API keys in the ```key.txt``` file and then run the exe files I have provided.  I highly reccommend you download the entire code folder or clone the repo. **NOTE**, you won't be able to use the Eleven Labs API with the prebuilt exe files, it defaults to the system's female voice.  You can enable the Eleven Labs API by adding a ```useEL = TRUE``` parameter to ```chat()``` or ```interview()``` methods in the provided .py files.
 
