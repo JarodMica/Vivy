@@ -14,5 +14,5 @@ save_foldername = "rem"
 
 # The magic bot:
 chatbot = ChatGPT(directory, voicename)
-chatbot.interview(save_foldername, useEL = False)
+chatbot.chat(save_foldername, useEL = False)
 

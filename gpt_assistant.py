@@ -27,7 +27,7 @@ class ChatGPT:
         self.r = sr.Recognizer()
         self.r.dynamic_energy_threshold=False
         self.r.energy_threshold = 400
-        self.mic = sr.Microphone(device_index=1)
+        self.mic = sr.Microphone()
 
         # Set-up the system of chatGPT
         self.mode = personality
@@ -104,7 +104,7 @@ class ChatGPT:
                 suffix = self.save_conversation(save_foldername)
                 
     
-    def interview(self, save_foldername, system_change, useEL=False):
+    def interview(self, save_foldername, system_change = '', useEL=False):
         '''
         Nearly identical to how the chat method works but this method conducts an interview 
         with a candidate using an interview bot style. The conversation is saved to a 
@@ -139,15 +139,17 @@ class ChatGPT:
                 response = self.response_completion()
                 self.generate_voice(response, useEL)
                 self.save_inprogress(suffix=suffix, folder_name=save_foldername)
-                 # if the bot responds with this, changes "system" behavior
-                if "interview" and "is over" in response.lower():
-                    system_change = system_change
-                    with open(f"{system_change}", "r") as file:
-                        system = file.read()
 
-                    for message in self.messages:
-                        if message['role'] == 'system':
-                            message['content'] = system
+                if system_change != '':
+                    # if the bot responds with this, changes "system" behavior
+                    if "interview" and "is over" in response.lower():
+                        system_change = system_change
+                        with open(f"{system_change}", "r") as file:
+                            system = file.read()
+
+                        for message in self.messages:
+                            if message['role'] == 'system':
+                                message['content'] = system
             except:
                 print("Token limit exceeded, clearing messsages list and restarting")
                 self.messages  = [
