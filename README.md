@@ -4,6 +4,10 @@ This repo utilizes OpenAI's GPT-3.5 Turbo model to engage in personalized conver
 
 The fastest way to try these assistants would be to setup your API keys in the ```key.txt``` file and then run the exe files I have provided.  I highly reccommend you download the entire code folder or clone the repo. **NOTE**, you won't be able to use the Eleven Labs API with the prebuilt exe files, it defaults to the system's female voice.  You can enable the Eleven Labs API by adding a ```useEL = TRUE``` parameter to ```chat()``` or ```interview()``` methods in the provided .py files.
 
+## EXE Quick Use
+
+If you just want to try out the assistants, download the entire zip folder (or clone the repo) and then unzip it to any location on your PC. Once unzipped, set up your API Keys in ```key.txt```. Now you can do two things, run the exe and try it out or adjust the prompts in the prompts folder.  If you run interview.exe, it's going to use the interview.txt file. Else, you can modify the prompts to your own case and then run the exe files.
+
 ## How the assistant currrently works:
 In general, this is how it work:
 1. Run python script and it will start with "Initializing".  Now it's in a "listening" state.
