@@ -4,7 +4,9 @@ from elevenlabslib import *
 import os
 import openai
 import pyttsx3
+import time
 
+current_directory = os.getcwd()
 
 class ChatGPT:
     def __init__(self, personality, voice_name="Vivy"):
@@ -36,7 +38,8 @@ class ChatGPT:
         self.mic = sr.Microphone()
 
         # Set-up the system of chatGPT
-        self.mode = personality
+        directory = os.path.join(current_directory,'prompts', personality)
+        self.mode = directory
         with open(f"{self.mode}", "r") as file:
             self.mode = file.read()
 
@@ -45,8 +48,7 @@ class ChatGPT:
         ]
 
     # This is to only initiate a conversation if you say "hey"
-    def start_conversation(self):
-
+    def start_conversation(self, keyword = 'hey'):
         print("Initiated: ")
         while True:
             with self.mic as source:
@@ -57,19 +59,20 @@ class ChatGPT:
                     user_input = user_input.split()
                 except:
                     continue
-                # Key word in order to start the conversation
-                if "hey" in user_input:
+                # Key word in order to start the conversation 
+                if f"{keyword}" in user_input:
                     print("true")
                     break
+                if "quit" in user_input:
+                    raise SystemExit
                 else:
                     continue
 
-    
     def chat(self, save_foldername, updatein='', useEL=False):
         '''Chat with an AI assistant using OpenAI's GPT-3 model.
         Args:
             save_foldername (str): The name of the folder to save the conversation history in.
-            updatein (str): The path of a file to read and update the "system" role for ChatGPT
+            updatein (str): The path of a file to read and update the "system" role for ChatGPT, does so by appending messages
             useEL (bool, optional): Whether to use Eleven Labs' API to generate and play audio. Defaults to False.
         Notes:
             - This method handles all of the chatting.
@@ -77,37 +80,39 @@ class ChatGPT:
             - The conversation history is saved to a file in the specified folder.
             - If the `update chat` command is spoken, the "system" role will be updated useing the path passed in from updatein
         '''
-        self.start_conversation()
-        suffix = self.save_conversation(save_foldername)
         while True:
-            audio = self.listen_for_voice()
-            try:
-                user_input = self.r.recognize_google(audio)
-            except:
-                continue
+            self.start_conversation()
+            suffix = self.save_conversation(save_foldername)
+            while True:
+                audio = self.listen_for_voice()
+                try:
+                    user_input = self.r.recognize_google(audio)
+                except:
+                    continue
 
-            if "quit" in user_input.split():
-                break
-            
-            # This merely appends the list of dictionaries, it doesn't overwrite the existing
-            # entries.  It should change the behavior of chatGPT though based on the text file.
-            if updatein != '':
-                if "update chat" in user_input.lower():
-                        update = updatein
-                        with open (update, "r") as file:
-                            update = file.read()
-                            self.messages.append({"role" : "system", "content" : update})
+                if "quit" in user_input.split():
+                    break
+                
+                # This merely appends the list of dictionaries, it doesn't overwrite the existing
+                # entries.  It should change the behavior of chatGPT though based on the text file.
+                if updatein != '':
+                    if "update chat" in user_input.lower():
+                            update = updatein
+                            with open (update, "r") as file:
+                                update = file.read()
+                                self.messages.append({"role" : "system", "content" : update})
 
-            self.messages.append({"role": "user", "content": user_input})
+                self.messages.append({"role": "user", "content": user_input})
 
-            try:
-                response = self.response_completion()
-                self.generate_voice(response=response, useEL=useEL)
-                self.save_inprogress(suffix=suffix, folder_name=save_foldername)
-            except:
-                print("Token limit exceeded, clearing messsages list and restarting")
-                self.messages = []
-                suffix = self.save_conversation(save_foldername)
+                try:
+                    response = self.response_completion()
+                    self.generate_voice(response=response, useEL=useEL)
+                    self.save_inprogress(suffix=suffix, folder_name=save_foldername)
+                except:
+                    print("Token limit exceeded, clearing messsages list and restarting")
+                    self.messages = [{"role": "system", "content": f"{self.mode}"}]
+                    suffix = self.save_conversation(save_foldername)
+            break
                 
     
     def interview(self, save_foldername, system_change = '', useEL=False):
@@ -148,9 +153,10 @@ class ChatGPT:
 
                 if system_change != '':
                     # if the bot responds with this, changes "system" behavior
+                    change_directory = os.path.join(current_directory,'prompts', system_change)
                     if "interview" and "is over" in response.lower():
-                        system_change = system_change
-                        with open(f"{system_change}", "r") as file:
+                        change_directory = change_directory
+                        with open(f"{change_directory}", "r") as file:
                             system = file.read()
 
                         for message in self.messages:
@@ -158,13 +164,56 @@ class ChatGPT:
                                 message['content'] = system
             except:
                 print("Token limit exceeded, clearing messsages list and restarting")
-                self.messages  = [
-                    {"role": "system", "content": f"{self.mode}"}
-                ]
+                self.messages  = [{"role": "system", "content": f"{self.mode}"}]
                 suffix = self.save_conversation(save_foldername)
                 self.messages.append({"role": "user", "content": start})
                 response = self.response_completion()
                 self.generate_voice(response, useEL)
+
+    def assistant(self, save_foldername, keyword ='hey', useEL = False, timeout = 5):
+        '''
+        This method acts as more of a "tradtional" smart assistant such as google or alexa.  It waits
+        for some keyword (if not specified, it will be "hey") and then proceeeds to the "conversation".
+        Once in the conversation, you will be able to interact with the assistant as you would normally, but
+        if no speech is detected after 5 seconds, the conversation will reset and the assistant will need
+        to be re-initiated with "hey".  
+
+        Args:
+            save_foldername (str): The name of the folder where the conversation will be saved.
+            keyword (str): The keyword(s) that will initiate the conversation
+            useEL (bool, optional): If false, the bot generates responses using the system voices
+            timeout = the amount of time the assistant will wait before resetting
+        '''
+
+        while True:
+            self.start_conversation(keyword = keyword)
+            self.messages = [{"role" : "system", "content" : f"{self.mode}"}]
+            suffix = self.save_conversation(save_foldername)
+            self.generate_voice("I'm listening.", useEL)
+            start_time = time.time()
+
+            while True:
+                audio = self.listen_for_voice()
+                try:
+                    user_input = self.r.recognize_google(audio)
+                except :
+                    if time.time() - start_time > timeout:
+                        break
+                    continue
+                
+                if "quit" in user_input.split():
+                    SystemExit
+                self.messages.append({"role" : "user", "content" : user_input})
+                try:
+                    response = self.response_completion()
+                    self.generate_voice(response=response, useEL=useEL)
+                    self.save_inprogress(suffix=suffix, folder_name=save_foldername)
+                    start_time = time.time()
+                except Exception as e:
+                    print(f"{e}")
+                    print("Token limit exceeded, clearing messsages list and restarting")
+                    self.messages = [{"role": "system", "content": f"{self.mode}"}]
+                    suffix = self.save_conversation(save_foldername)
  
     '''
     There are two methods that save files, one save_conversation and the other save_inprogress
@@ -234,6 +283,9 @@ class ChatGPT:
         with self.mic as source:
                 print("\n Listening...")
                 self.r.adjust_for_ambient_noise(source, duration=0.5)
-                audio = self.r.listen(source)
+                try:
+                    audio = self.r.listen(source, timeout=5)
+                except:
+                    return []
         print("no longer listening")
         return audio

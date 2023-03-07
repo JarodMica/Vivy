@@ -1,10 +1,7 @@
-import os
 from gpt_assistant import ChatGPT
 
 # Set-up personality, profession, or specialty of the bot
-current_directory = os.getcwd()
 personality = "roleplay.txt"
-directory = os.path.join(current_directory,'prompts', personality)
 
 # Set-up Eleven Labs voice
 voicename = "Rem"
@@ -13,6 +10,6 @@ voicename = "Rem"
 save_foldername = "roleplay"
 
 # The magic bot:
-chatbot = ChatGPT(directory, voicename)
-chatbot.chat(save_foldername, useEL = False)
+chatbot = ChatGPT(personality=personality, voice_name=voicename)
+chatbot.chat(save_foldername=save_foldername, useEL = False)
 
