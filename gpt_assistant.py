@@ -22,9 +22,12 @@ class ChatGPT:
         openai.api_key = self.GPT_KEY
 
         # Eleven Labs Set-up
-        self.EL_KEY = keys['EL_KEY'] #Eleven labs
-        self.user = ElevenLabsUser(f"{self.EL_KEY}")
-        self.voice = self.user.get_voices_by_name(voice_name)[0]  # This is a list because multiple voices can have the same name
+        try:
+            self.EL_KEY = keys['EL_KEY'] #Eleven labs
+            self.user = ElevenLabsUser(f"{self.EL_KEY}")
+            self.voice = self.user.get_voices_by_name(voice_name)[0]  # This is a list because multiple voices can have the same name
+        except:
+            print("No API Key set for Eleven Labs")
 
         # Mic Set-up
         self.r = sr.Recognizer()
