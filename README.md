@@ -2,11 +2,11 @@
 
 This repo utilizes OpenAI's GPT-3.5 Turbo model to engage in personalized conversations with users, catering to their preferred communication style. As GPT-3.5 Turbo serves as the foundation for ChatGPT, this project essentially shares its underlying model. Ultimately, the aim of this project is to develop a personal assistant that emulates human-like interactions. As the project is a work in progress, its features will expand as I continue to refine and iterate on the concept.
 
-The fastest way to try these assistants would be to setup your API keys in the ```key.txt``` file and then run the exe files I have provided.  I highly reccommend you download the entire code folder or clone the repo. **NOTE**, you won't be able to use the Eleven Labs API with the prebuilt exe files, it defaults to the system's female voice.  You can enable the Eleven Labs API by adding a ```useEL = TRUE``` parameter to ```chat()``` or ```interview()``` methods in the provided .py files.
+The fastest way to try these assistants would be to setup your API keys in the ```key.txt``` file and then run the exe files I have provided.  To find the exe files, check the latest release for this project https://github.com/JarodMica/Vivy/releases/tag/v0.1.0-alpha. **NOTE**, you won't be able to use the Eleven Labs API with the prebuilt exe files, it defaults to the system's female voice.  You can enable the Eleven Labs API by adding a ```useEL = TRUE``` parameter to ```chat()``` or ```interview()``` methods in the provided .py files.
 
 ## EXE Quick Use
 
-If you just want to try out the assistants, download the entire zip folder (or clone the repo) and then unzip it to any location on your PC. Once unzipped, set up your API Keys in ```key.txt```. Now you can do two things, run the exe and try it out or adjust the prompts in the prompts folder.  If you run interview.exe, it's going to use the interview.txt file. Else, you can modify the prompts to your own case and then run the exe files.
+If you just want to try out the assistants, download the zip folder and then unzip it to any location on your PC. Once unzipped, set up your API Keys in ```key.txt```. Now you can do two things, run the exe and try it out or adjust the prompts in the prompts folder.  If you run interview.exe, it's going to use the interview.txt file (same with roleplay). Else, you can modify the prompts to your own case and then run the exe files.
 
 ## How the assistant currrently works:
 In general, this is how it work:
