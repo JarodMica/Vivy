@@ -25,6 +25,8 @@ If you say quit, it will quit.
 - ```pip install openai```
 - ```pip install pyttsx3```
 - ```pip install sounddevice```
+- ```pip install soundfile```
+- ```pip install pyaudio```
 
 As well, you must set up your API keys inside of ```key.py```.  If you don't this won't work at all.  To get the openAI key, open up an account at https://openai.com/blog/openai-api and the get an Eleven Labs API key, you need to set-up an account at https://beta.elevenlabs.io/ (this is a paid option).
 
