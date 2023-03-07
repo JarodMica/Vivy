@@ -87,11 +87,12 @@ class ChatGPT:
                 audio = self.listen_for_voice()
                 try:
                     user_input = self.r.recognize_google(audio)
+                    
                 except:
                     continue
 
                 if "quit" in user_input.split():
-                    break
+                        raise SystemExit
                 
                 # This merely appends the list of dictionaries, it doesn't overwrite the existing
                 # entries.  It should change the behavior of chatGPT though based on the text file.
@@ -141,10 +142,10 @@ class ChatGPT:
                 user_input = self.r.recognize_google(audio)
             except:
                 continue
-
+            
             if "quit" in user_input.split():
-                break
-
+                        raise SystemExit
+            
             self.messages.append({"role": "user", "content": user_input})
             try:
                 response = self.response_completion()
@@ -175,7 +176,7 @@ class ChatGPT:
         This method acts as more of a "tradtional" smart assistant such as google or alexa.  It waits
         for some keyword (if not specified, it will be "hey") and then proceeeds to the "conversation".
         Once in the conversation, you will be able to interact with the assistant as you would normally, but
-        if no speech is detected after 5 seconds, the conversation will reset and the assistant will need
+        if no speech is detected after 5 seconds (adjustable), the conversation will reset and the assistant will need
         to be re-initiated with "hey".  
 
         Args:
@@ -196,13 +197,15 @@ class ChatGPT:
                 audio = self.listen_for_voice()
                 try:
                     user_input = self.r.recognize_google(audio)
+                    
                 except :
                     if time.time() - start_time > timeout:
                         break
                     continue
                 
                 if "quit" in user_input.split():
-                    SystemExit
+                        raise SystemExit
+
                 self.messages.append({"role" : "user", "content" : user_input})
                 try:
                     response = self.response_completion()
