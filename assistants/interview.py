@@ -1,16 +1,44 @@
-from gpt_assistant import ChatGPT
+import os
+import sys
+from package.gpt_assistant import ChatGPT
 
-# Set-up personality, profession, or specialty of the bot
-personality = "interview.txt"
-system_change = "interview_end.txt"
 
-# Set-up Eleven Labs voice
-voicename = "Eren"
+# The only variables that need to be modifed
+foldername = "interview"
+personality = "interview"
+system_change = "interview_end"
+voicename = "Rem"
+useEL = False
 
-# name of folder to save conversations into
-save_foldername = "interview"
+if getattr(sys, 'frozen', False):
+    # running as a compiled executable
+    script_dir = os.path.dirname(os.path.abspath(sys.executable))
+    while True:
+        user_input = input("Are you using an Eleven Labs voice (yes/no)?\n")
+        if user_input == 'yes':
+            voicename = input("What is the name of you Eleven Labs voice: ")
+            useEL = True
+            break
+        elif user_input == 'no':
+            break
+        else:
+            print("Invalid Input, please try again.")
+else:
+    # running as a script file
+    script_dir = os.path.dirname(os.path.abspath(__file__))
 
-# The magic bot:
-chatbot = ChatGPT(personality, voicename)
-chatbot.interview(save_foldername, system_change, useEL = False)
+foldername_dir = os.path.join(script_dir,f"conversations/{foldername}")
+personality_dir = os.path.join(script_dir,f"prompts/{personality}.txt")
+syschange_dir = os.path.join(script_dir,f"prompts/{system_change}.txt")
+keys = os.path.join(script_dir,"keys.txt")
+
+
+chatbot = ChatGPT(personality=personality_dir, 
+                  keys=keys, 
+                  voice_name=voicename
+                  )
+chatbot.interview(save_foldername=foldername_dir,
+                  system_change=syschange_dir,
+                   useEL=useEL
+                   )
 

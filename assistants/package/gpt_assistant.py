@@ -168,13 +168,14 @@ class ChatGPT:
                 if system_change != '':
                     # if the bot responds with this, changes "system" behavior
                     if "interview" and "is over" in response.lower():
+                        system_change=system_change
                         with open(system_change, "r") as file:
                             system = file.read()
 
                         for message in self.messages:
                             if message['role'] == 'system':
                                 message['content'] = system
-            except:
+            except Exception as e:
                 print("Token limit exceeded, clearing messsages list and restarting")
                 self.messages  = [{"role": "system", "content": f"{self.mode}"}]
                 suffix = self.save_conversation(save_foldername)
@@ -344,7 +345,6 @@ class ChatGPT:
     
     def generate_voice(self, response, useEL):
         if useEL == True:
-                print(type(self.voice.generate_and_play_audio(f"{response}", playInBackground=False)))
                 self.voice.generate_and_play_audio(f"{response}", playInBackground=False)
         else:
             self.engine.say(f"{response}")

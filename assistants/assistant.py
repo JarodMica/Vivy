@@ -2,14 +2,26 @@ import os
 import sys
 from package.gpt_assistant import ChatGPT
 
+
 # The only variables that need to be modifed
 foldername = "assistant"
 personality = "assistant"
 voicename = "Rem"
+useEL = False
 
 if getattr(sys, 'frozen', False):
     # running as a compiled executable
     script_dir = os.path.dirname(os.path.abspath(sys.executable))
+    while True:
+        user_input = input("Are you using an Eleven Labs voice (yes/no)?\n")
+        if user_input == 'yes':
+            voicename = input("What is the name of you Eleven Labs voice: ")
+            useEL = True
+            break
+        elif user_input == 'no':
+            break
+        else:
+            print("Invalid Input, please try again.")
 else:
     # running as a script file
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -24,5 +36,5 @@ chatbot = ChatGPT(personality=personality_dir,
                   voice_name=voicename
                   )
 chatbot.assistant(save_foldername=foldername_dir,
-                   useEL=False
+                   useEL=useEL
                    )
