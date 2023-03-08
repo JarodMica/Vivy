@@ -5,18 +5,28 @@ import os
 import openai
 import pyttsx3
 import time
+import winsound
 
-current_directory = os.getcwd()
 
 class ChatGPT:
-    def __init__(self, personality, voice_name="Vivy"):
+    def __init__(self, personality:str, keys:str, voice_name="Vivy", device_index=0):
+        '''
+        
+
+        Args:
+            personality (str)   : path to the prompts or "personalities" .txt
+            keys (str)          : path to the keys.txt file
+            voice_name (str)    : Eleven Labs voice to use
+            device_index (int)  : microphone device to use (0 is default)
+        '''
         # Read in keys
-        with open("key.txt", "r") as file:
+        with open(keys, "r") as file:
             keys = json.load(file)
 
         # pyttsx3 Set-up
         self.engine = pyttsx3.init()
-        self.voices = self.engine.getProperty('voices') 
+        # self.engine.setProperty('rate', 180) #200 is the default speed, this makes it slower
+        self.voices = self.engine.getProperty('voices')
         self.engine.setProperty('voice', self.voices[1].id) # 0 for male, 1 for female
 
         # GPT Set-Up
@@ -35,12 +45,10 @@ class ChatGPT:
         self.r = sr.Recognizer()
         self.r.dynamic_energy_threshold=False
         self.r.energy_threshold = 400
-        self.mic = sr.Microphone()
+        self.mic = sr.Microphone(device_index=device_index)
 
         # Set-up the system of chatGPT
-        directory = os.path.join(current_directory,'prompts', personality)
-        self.mode = directory
-        with open(f"{self.mode}", "r") as file:
+        with open(personality, "r") as file:
             self.mode = file.read()
 
         self.messages  = [
@@ -68,8 +76,14 @@ class ChatGPT:
                 else:
                     continue
 
-    def chat(self, save_foldername, updatein='', useEL=False):
-        '''Chat with an AI assistant using OpenAI's GPT-3 model.
+    def chat(self, save_foldername, keyword ='hey', updatein='', useEL=False):
+        '''
+        Chat with an AI assistant using OpenAI's GPT-3 model.  Unlike the others, once you initiate
+        the conversation with a keyword, it will just keep listening.  This means no timer on the amount
+        of silence in between speaking, but it also means it's listening forever and will respond back
+        until you quit out.  Check out assistant() or assistantp() if you want behavior closer to
+        Google/Alexa.
+
         Args:
             save_foldername (str): The name of the folder to save the conversation history in.
             updatein (str): The path of a file to read and update the "system" role for ChatGPT, does so by appending messages
@@ -81,7 +95,7 @@ class ChatGPT:
             - If the `update chat` command is spoken, the "system" role will be updated useing the path passed in from updatein
         '''
         while True:
-            self.start_conversation()
+            self.start_conversation(keyword=keyword)
             suffix = self.save_conversation(save_foldername)
             while True:
                 audio = self.listen_for_voice()
@@ -108,12 +122,11 @@ class ChatGPT:
                 try:
                     response = self.response_completion()
                     self.generate_voice(response=response, useEL=useEL)
-                    self.save_inprogress(suffix=suffix, folder_name=save_foldername)
+                    self.save_inprogress(suffix=suffix, save_foldername=save_foldername)
                 except:
                     print("Token limit exceeded, clearing messsages list and restarting")
                     self.messages = [{"role": "system", "content": f"{self.mode}"}]
                     suffix = self.save_conversation(save_foldername)
-            break
                 
     
     def interview(self, save_foldername, system_change = '', useEL=False):
@@ -125,7 +138,7 @@ class ChatGPT:
 
         Args:
             save_foldername (str): The name of the folder where the conversation will be saved.
-            system_change (str): A file name that contains the modified system behavior.
+            system_change (str): path to the personality change .txt file
             useEL (bool, optional): If false, the bot generates responses using the system voices
         '''
 
@@ -150,14 +163,12 @@ class ChatGPT:
             try:
                 response = self.response_completion()
                 self.generate_voice(response, useEL)
-                self.save_inprogress(suffix=suffix, folder_name=save_foldername)
+                self.save_inprogress(suffix=suffix, save_foldername=save_foldername)
 
                 if system_change != '':
                     # if the bot responds with this, changes "system" behavior
-                    change_directory = os.path.join(current_directory,'prompts', system_change)
                     if "interview" and "is over" in response.lower():
-                        change_directory = change_directory
-                        with open(f"{change_directory}", "r") as file:
+                        with open(system_change, "r") as file:
                             system = file.read()
 
                         for message in self.messages:
@@ -187,6 +198,11 @@ class ChatGPT:
         '''
 
         while True:
+            # Beep to let you know it reset
+            duration = 500  # milliseconds
+            freq = 1000  # Hz
+            winsound.Beep(freq, duration)
+
             self.start_conversation(keyword = keyword)
             self.messages = [{"role" : "system", "content" : f"{self.mode}"}]
             suffix = self.save_conversation(save_foldername)
@@ -210,50 +226,101 @@ class ChatGPT:
                 try:
                     response = self.response_completion()
                     self.generate_voice(response=response, useEL=useEL)
-                    self.save_inprogress(suffix=suffix, folder_name=save_foldername)
+                    self.save_inprogress(suffix=suffix, save_foldername=save_foldername)
                     start_time = time.time()
                 except Exception as e:
                     print(f"{e}")
                     print("Token limit exceeded, clearing messsages list and restarting")
                     self.messages = [{"role": "system", "content": f"{self.mode}"}]
                     suffix = self.save_conversation(save_foldername)
- 
-    '''
-    There are two methods that save files, one save_conversation and the other save_inprogress
-    save_conversation : checks the folder for previous conversations and will get the next suffix
-                        that has not been used yet.  It returns suffix number
-    save_inprogress   : Uses the suffix number returned from save_conversation to continually update
-                        the file for this instance of execution.  This is so that you can save the 
-                        conversation as you go so if it crashes, you don't lose to conversation.
 
-    Args:
-        folder_name (str): Name of the folder to save to in the directory
-    '''
-    def save_conversation(self, folder_name="standard"):
-        current_directory = os.getcwd()
-        directory = os.path.join(current_directory, 'conversations', folder_name)
-        os.makedirs(directory, exist_ok=True)
+    def assistantP(self, save_foldername, keyword ='hey', useEL = False, timeout = 5):
+        '''
+        Nearly identical to assistant, but maintains a persistent (p) memory of the conversation. 
+
+        Args:
+            save_foldername (str): The name of the folder where the conversation will be saved.
+            keyword (str): The keyword(s) that will initiate the conversation
+            useEL (bool, optional): If false, the bot generates responses using the system voices
+            timeout = the amount of time the assistant will wait before resetting
+        '''
+
+        while True:
+            # Beep to let you know it reset
+            duration = 500  # milliseconds
+            freq = 1000  # Hz
+            winsound.Beep(freq, duration)
+
+            self.start_conversation(keyword = keyword)
+            self.generate_voice("I'm listening.", useEL)
+            suffix = self.save_conversation(save_foldername)
+            start_time = time.time()
+
+            while True:
+                audio = self.listen_for_voice()
+                try:
+                    user_input = self.r.recognize_google(audio)
+                    
+                except :
+                    if time.time() - start_time > timeout:
+                        break
+                    continue
+                
+                if "quit" in user_input.split():
+                        raise SystemExit
+                
+                try:
+                    self.messages.append({"role" : "user", "content" : user_input})
+                    response = self.response_completion()
+                    self.generate_voice(response=response, useEL=useEL)
+                    self.save_inprogress(suffix=suffix, save_foldername=save_foldername)
+                    start_time = time.time()
+                except Exception as e:
+                    print(f"{e}")
+                    if "overloaded" in e.split():
+                        continue
+                    print("Token limit exceeded, clearing messsages list and restarting")
+                    self.messages = [{"role": "system", "content": f"{self.mode}"}]
+                    suffix = self.save_conversation(save_foldername)
+ 
+ 
+    def save_conversation(self, save_foldername:str):
+        '''
+        Checks the folder for previous conversations and will get the next suffix that has not been used yet.  It returns suffix number
+
+        Args:
+            save_foldername (str) : Takes in the path to save the conversation to.
+        '''
+        
+        os.makedirs(save_foldername, exist_ok=True)
 
         base_filename = 'conversation'
         suffix = 0
-        filename = os.path.join(directory, f'{base_filename}_{suffix}.txt')
+        filename = os.path.join(save_foldername, f'{base_filename}_{suffix}.txt')
 
         while os.path.exists(filename):
             suffix += 1
-            filename = os.path.join(directory, f'{base_filename}_{suffix}.txt')
+            filename = os.path.join(save_foldername, f'{base_filename}_{suffix}.txt')
 
         with open(filename, 'w') as file:
             json.dump(self.messages, file, indent=4)
 
         return suffix
 
-    def save_inprogress(self, suffix, folder_name="standard"):
-        current_directory = os.getcwd()
-        directory = os.path.join(current_directory, 'conversations', folder_name)
-        os.makedirs(directory, exist_ok=True)
+    def save_inprogress(self, suffix, save_foldername):
+        '''
+        Uses the suffix number returned from save_conversation to continually update the 
+        file for this instance of execution.  This is so that you can save the conversation 
+        as you go so if it crashes, you don't lose to conversation.  Shouldn't be called
+        from outside of the class.
 
+        Args:
+            suffix  :  Takes suffix count from save_conversation()
+        '''
+
+        os.makedirs(save_foldername, exist_ok=True)
         base_filename = 'conversation'
-        filename = os.path.join(directory, f'{base_filename}_{suffix}.txt')
+        filename = os.path.join(save_foldername, f'{base_filename}_{suffix}.txt')
 
         with open(filename, 'w') as file:
             json.dump(self.messages, file, indent=4)
@@ -277,6 +344,7 @@ class ChatGPT:
     
     def generate_voice(self, response, useEL):
         if useEL == True:
+                print(type(self.voice.generate_and_play_audio(f"{response}", playInBackground=False)))
                 self.voice.generate_and_play_audio(f"{response}", playInBackground=False)
         else:
             self.engine.say(f"{response}")
