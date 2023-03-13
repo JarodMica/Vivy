@@ -2,13 +2,13 @@ import os
 import sys
 from package.gpt_assistant import ChatGPT
 
-
 # The only variables that need to be modifed
 foldername = "interview"
 personality = "interview"
 system_change = "interview_end"
 voicename = "Rem"
 useEL = False
+usewhisper = True
 
 if getattr(sys, 'frozen', False):
     # running as a compiled executable
@@ -39,6 +39,7 @@ chatbot = ChatGPT(personality=personality_dir,
                   )
 chatbot.interview(save_foldername=foldername_dir,
                   system_change=syschange_dir,
-                   useEL=useEL
+                   useEL=useEL,
+                   usewhisper=usewhisper
                    )
 

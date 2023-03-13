@@ -2,12 +2,12 @@ import os
 import sys
 from package.gpt_assistant import ChatGPT
 
-
 # The only variables that need to be modifed
 foldername = "roleplay"
 personality = "roleplay"
 voicename = "Rem"
 useEL = False
+usewhisper = True
 
 if getattr(sys, 'frozen', False):
     # running as a compiled executable
@@ -36,5 +36,6 @@ chatbot = ChatGPT(personality=personality_dir,
                   voice_name=voicename
                   )
 chatbot.chat(save_foldername=foldername_dir,
-                   useEL=useEL
+                   useEL=useEL,
+                   usewhisper=usewhisper
                    )

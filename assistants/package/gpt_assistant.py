@@ -1,4 +1,5 @@
 import json
+import sys
 import speech_recognition as sr
 from elevenlabslib import *
 import os
@@ -7,12 +8,10 @@ import pyttsx3
 import time
 import winsound
 
-
 class ChatGPT:
     def __init__(self, personality:str, keys:str, voice_name="Vivy", device_index=0):
         '''
         
-
         Args:
             personality (str)   : path to the prompts or "personalities" .txt
             keys (str)          : path to the keys.txt file
@@ -55,28 +54,8 @@ class ChatGPT:
             {"role": "system", "content": f"{self.mode}"}
         ]
 
-    # This is to only initiate a conversation if you say "hey"
-    def start_conversation(self, keyword = 'hey'):
-        print("Initiated: ")
-        while True:
-            with self.mic as source:
-                self.r.adjust_for_ambient_noise(source, duration=0.5)
-                audio = self.r.listen(source)
-                try:
-                    user_input = self.r.recognize_google(audio)
-                    user_input = user_input.split()
-                except:
-                    continue
-                # Key word in order to start the conversation 
-                if f"{keyword}" in user_input:
-                    print("true")
-                    break
-                if "quit" in user_input:
-                    raise SystemExit
-                else:
-                    continue
-
-    def chat(self, save_foldername, keyword ='hey', updatein='', useEL=False):
+# Different assistant modes starts here ---------------------------------------------------------------------------------------------------
+    def chat(self, save_foldername, keyword ='hey', updatein='', useEL=False, usewhisper=False):
         '''
         Chat with an AI assistant using OpenAI's GPT-3 model.  Unlike the others, once you initiate
         the conversation with a keyword, it will just keep listening.  This means no timer on the amount
@@ -98,15 +77,23 @@ class ChatGPT:
             self.start_conversation(keyword=keyword)
             suffix = self.save_conversation(save_foldername)
             while True:
-                audio = self.listen_for_voice()
+                audio = self.listen_for_voice(timeout=None)
                 try:
-                    user_input = self.r.recognize_google(audio)
+                    if usewhisper:
+                        if audio:
+                            user_input = self.whisper(audio)
+                            print("You said: ", user_input) # Checking
+                        else:
+                            raise ValueError("Empty audio input")
+                    else:    
+                        user_input = self.r.recognize_google(audio)
                     
-                except:
+                except Exception as e:
+                    print(e)
                     continue
 
-                if "quit" in user_input.split():
-                        raise SystemExit
+                if "quit" in user_input.lower() or "quit." in user_input.lower():
+                    raise SystemExit
                 
                 # This merely appends the list of dictionaries, it doesn't overwrite the existing
                 # entries.  It should change the behavior of chatGPT though based on the text file.
@@ -129,7 +116,7 @@ class ChatGPT:
                     suffix = self.save_conversation(save_foldername)
                 
     
-    def interview(self, save_foldername, system_change = '', useEL=False):
+    def interview(self, save_foldername, system_change = '', useEL=False, usewhisper = False):
         '''
         Nearly identical to how the chat method works but this method conducts an interview 
         with a candidate using an interview bot style. The conversation is saved to a 
@@ -150,14 +137,20 @@ class ChatGPT:
         response = self.response_completion()
         self.generate_voice(response, useEL)
         while True:
-            audio = self.listen_for_voice()
+            audio = self.listen_for_voice(timeout=None)
             try:
-                user_input = self.r.recognize_google(audio)
-            except:
+                if usewhisper == True:
+                    user_input = self.whisper(audio)
+                    print("You said: ", user_input) # Checking
+                else:    
+                    user_input = self.r.recognize_google(audio)
+                
+            except Exception as e:
+                print(e)
                 continue
             
-            if "quit" in user_input.split():
-                        raise SystemExit
+            if "quit" in user_input.lower() or "quit." in user_input.lower():
+                raise SystemExit
             
             self.messages.append({"role": "user", "content": user_input})
             try:
@@ -183,7 +176,7 @@ class ChatGPT:
                 response = self.response_completion()
                 self.generate_voice(response, useEL)
 
-    def assistant(self, save_foldername, keyword ='hey', useEL = False, timeout = 5):
+    def assistant(self, save_foldername, keyword ='hey', useEL = False, usewhisper = False, timeout = 5):
         '''
         This method acts as more of a "tradtional" smart assistant such as google or alexa.  It waits
         for some keyword (if not specified, it will be "hey") and then proceeeds to the "conversation".
@@ -209,19 +202,22 @@ class ChatGPT:
             suffix = self.save_conversation(save_foldername)
             self.generate_voice("I'm listening.", useEL)
             start_time = time.time()
-
             while True:
                 audio = self.listen_for_voice()
                 try:
-                    user_input = self.r.recognize_google(audio)
+                    if usewhisper == True:
+                        user_input = self.whisper(audio)
+                        print("You said: ", user_input) # Checking
+                    else:    
+                        user_input = self.r.recognize_google(audio)
                     
                 except :
                     if time.time() - start_time > timeout:
                         break
                     continue
                 
-                if "quit" in user_input.split():
-                        raise SystemExit
+                if "quit" in user_input.lower() or "quit." in user_input.lower():
+                    raise SystemExit
 
                 self.messages.append({"role" : "user", "content" : user_input})
                 try:
@@ -235,7 +231,7 @@ class ChatGPT:
                     self.messages = [{"role": "system", "content": f"{self.mode}"}]
                     suffix = self.save_conversation(save_foldername)
 
-    def assistantP(self, save_foldername, keyword ='hey', useEL = False, timeout = 5):
+    def assistantP(self, save_foldername, keyword ='hey', useEL = False, usewhisper = False, timeout = 5):
         '''
         Nearly identical to assistant, but maintains a persistent (p) memory of the conversation. 
 
@@ -243,7 +239,8 @@ class ChatGPT:
             save_foldername (str): The name of the folder where the conversation will be saved.
             keyword (str): The keyword(s) that will initiate the conversation
             useEL (bool, optional): If false, the bot generates responses using the system voices
-            timeout = the amount of time the assistant will wait before resetting
+            usewhisper (bool, optional): If true, uses whisper for transcript, else uses google
+            timeout : the amount of time the assistant will wait before resetting
         '''
 
         while True:
@@ -260,15 +257,18 @@ class ChatGPT:
             while True:
                 audio = self.listen_for_voice()
                 try:
-                    user_input = self.r.recognize_google(audio)
-                    
+                    if usewhisper == True:
+                        user_input = self.whisper(audio)
+                        print("You said: ", user_input) # Checking
+                    else:    
+                        user_input = self.r.recognize_google(audio)
                 except :
                     if time.time() - start_time > timeout:
                         break
                     continue
                 
-                if "quit" in user_input.split():
-                        raise SystemExit
+                if "quit" in user_input.lower() or "quit." in user_input.lower():
+                    raise SystemExit
                 
                 try:
                     self.messages.append({"role" : "user", "content" : user_input})
@@ -284,7 +284,29 @@ class ChatGPT:
                     self.messages = [{"role": "system", "content": f"{self.mode}"}]
                     suffix = self.save_conversation(save_foldername)
  
- 
+
+ # Methods the assistants rely on------------------------------------------------------------------------------------------------------------------
+
+    # This is to only initiate a conversation if you say "hey"
+    def start_conversation(self, keyword = 'hey'):
+        print("Initiated: ")
+        while True:
+            with self.mic as source:
+                self.r.adjust_for_ambient_noise(source, duration=0.5)
+                audio = self.r.listen(source)
+                try:
+                    user_input = self.r.recognize_google(audio)
+                    user_input = user_input.split()
+                except:
+                    continue
+                # Key word in order to start the conversation 
+                if f"{keyword}" in user_input:
+                    print("true")
+                    break
+                if "quit" in user_input:
+                    raise SystemExit
+                else:
+                    continue
     def save_conversation(self, save_foldername:str):
         '''
         Checks the folder for previous conversations and will get the next suffix that has not been used yet.  It returns suffix number
@@ -350,13 +372,31 @@ class ChatGPT:
             self.engine.say(f"{response}")
             self.engine.runAndWait()
 
-    def listen_for_voice(self):
+    def listen_for_voice(self, timeout:int|None=5):
         with self.mic as source:
                 print("\n Listening...")
                 self.r.adjust_for_ambient_noise(source, duration=0.5)
                 try:
-                    audio = self.r.listen(source, timeout=5)
+                    audio = self.r.listen(source, timeout)
                 except:
                     return []
         print("no longer listening")
         return audio
+    
+    def whisper(self, audio):
+        '''
+
+
+        Args:
+            audio : AudioData instance used in Speech Recognition
+        '''
+        with open('speech.wav','wb') as f:
+            f.write(audio.get_wav_data())
+        speech = open('speech.wav', 'rb')
+        model_id = "whisper-1"
+        completion = openai.Audio.transcribe(
+            model=model_id,
+            file=speech
+        )
+        response = completion['text']
+        return response
