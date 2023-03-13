@@ -1,4 +1,0 @@
-{
-"EL_KEY" : "Enter your own Eleven Labs Key",
-"GPT_KEY" : "Enter your own Openai Key"
-}
