@@ -2,16 +2,16 @@
 
 This repo utilizes OpenAI's GPT-3.5 Turbo model to engage in personalized conversations with users, catering to their preferred communication style. As GPT-3.5 Turbo serves as the foundation for ChatGPT, this project essentially shares its underlying model. Ultimately, the aim of this project is to develop a personal assistant that emulates human-like interactions. As the project is a work in progress, its features will expand as I continue to refine and iterate on the concept.
 
-The fastest way to try these assistants would be to setup your API keys in the ```key.txt``` file and then run the exe files I have provided.  To find the exe files, check the latest release for this project https://github.com/JarodMica/Vivy/releases/tag/v0.1.0-alpha. **NOTE**, you won't be able to use the Eleven Labs API with the prebuilt exe files, it defaults to the system's female voice.  You can enable the Eleven Labs API by adding a ```useEL = TRUE``` parameter to ```chat()``` or ```interview()``` methods in the provided .py files.
+The fastest way to try these assistants would be to setup your API keys in the ```key.txt``` file and then run the exe files I have provided.  For this to work, **you must** rename ```keys_example.txt``` to be ```keys.txt```.  To find the exe files, check the latest release for this project https://github.com/JarodMica/Vivy/releases/tag/v0.1.0-alpha.
 
 ## EXE Quick Use
 
-If you just want to try out the assistants, download the zip folder and then unzip it to any location on your PC. Once unzipped, set up your API Keys in ```key.txt```. Now you can do two things, run the exe and try it out or adjust the prompts in the prompts folder.  If you run interview.exe, it's going to use the interview.txt file (same with roleplay). Else, you can modify the prompts to your own case and then run the exe files.
+If you just want to try out the assistants, download the zip folder and then unzip it to any location on your PC. Once unzipped, rename the keys txt file to ```keys.txt``` and then set up your API Keys in ```key.txt```. Now you can do two things, run the exe and try it out or adjust the prompts in the prompts folder.  If you run interview.exe, it's going to use the interview.txt file (same with roleplay). Else, you can modify the prompts to your own case and then run the exe files.
 
 ## How the chat assistant currrently works (there are others):
 In general, this is how it work:
 1. Run python script and it will start with "Initializing".  Now it's in a "listening" state.
-2. The AI assistant is activated when the user says "hey" or anything containing this keyword (they does not work)
+2. The AI assistant is activated when the user says "hey" or anything containing this keyword ("they" does not work)
 3. Now the user can speak to the AI, it'll listen until you stop speaking (default is 0.8 seconds)
 4. It then transcribes the user's speech and generates a response using ChatGPT
 5. It will read out the response.
@@ -31,13 +31,14 @@ If you say quit, it will quit.
 To install all of these, you can use the ```requirements.txt``` file in the repo.  To do this, the command is:
 ```pip install -r requirements.txt```
 
-As well, you must set up your API keys inside of ```key.py```.  If you don't this won't work at all.  To get the openAI key, open up an account at https://openai.com/blog/openai-api and the get an Eleven Labs API key, you need to set-up an account at https://beta.elevenlabs.io/ (this is a paid option).
+I must iterate again, you must set up your API keys inside of ```key.txt```.  If you don't this won't work at all.  To get the openAI key, open up an account at https://openai.com/blog/openai-api and to get an Eleven Labs API key, you need to set-up an account at https://beta.elevenlabs.io/ (this is a paid option).
 
 If you don't have python and git installed on your computer, check out this 5-minute tutorial I made here: https://youtu.be/Xk-u7tTqwwY
  
 ## Once you've done the previous stuff
 
-Here's a quick example of a python script that works with the ChatGPT class defined in gpt_assistant:
+Here's a quick description of the variables I reccommend be modified.  If you want to see how this is implemented in code, check out the python scripts in the assistants folder. 
+
 ```
 # The only variables that need to be modifed
 foldername = "assistantP"

@@ -1,3 +1,6 @@
+# This is the persistent variation of assistant so it will remember what
+# you talked about earlier in the chat.
+
 from package.gpt_assistant import ChatGPT
 from utils import get_user_input, get_file_paths
 
@@ -10,8 +13,9 @@ usewhisper = True
 
 script_dir = get_user_input()
 
-foldername_dir, personality_dir, keys = get_file_paths(script_dir, foldername, personality)
-
+foldername_dir, personality_dir, keys = get_file_paths(script_dir, 
+                                                       foldername, 
+                                                       personality)
 
 chatbot = ChatGPT(personality=personality_dir, 
                   keys=keys, 
