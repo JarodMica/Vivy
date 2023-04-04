@@ -43,7 +43,7 @@ class ChatGPT:
         # Mic Set-up
         self.r = sr.Recognizer()
         self.r.dynamic_energy_threshold=False
-        self.r.energy_threshold = 400
+        self.r.energy_threshold = 1000
         self.mic = sr.Microphone(device_index=device_index)
 
         # Set-up the system of chatGPT
