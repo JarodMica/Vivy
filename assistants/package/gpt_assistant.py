@@ -1,5 +1,4 @@
 import json
-import sys
 import speech_recognition as sr
 from elevenlabslib import *
 import os
@@ -9,9 +8,10 @@ import time
 import winsound
 
 class ChatGPT:
-    def __init__(self, personality:str, keys:str, voice_name="Vivy", device_index=0):
+    def __init__(self, personality:str, keys:str, voice_name="Rachel", device_index=0):
         '''
-        
+        Initialize the ChatGPT class with all of the necessary arguments
+
         Args:
             personality (str)   : path to the prompts or "personalities" .txt
             keys (str)          : path to the keys.txt file
@@ -31,12 +31,17 @@ class ChatGPT:
         # GPT Set-Up
         self.GPT_KEY = keys['GPT_KEY']
         openai.api_key = self.GPT_KEY
+        self.gptmodel = "gpt-3.5-turbo"
 
         # Eleven Labs Set-up
         try:
             self.EL_KEY = keys['EL_KEY'] #Eleven labs
             self.user = ElevenLabsUser(f"{self.EL_KEY}")
-            self.voice = self.user.get_voices_by_name(voice_name)[0]  # This is a list because multiple voices can have the same name
+            try:
+                self.voice = self.user.get_voices_by_name(voice_name)[0]  # This is a list because multiple voices can have the same name
+            except:
+                print("Setting default voice to Rachel")
+                self.voice = self.user.get_voices_by_name("Rachel")[0] 
         except:
             print("No API Key set for Eleven Labs")
 
@@ -67,11 +72,6 @@ class ChatGPT:
             save_foldername (str): The name of the folder to save the conversation history in.
             updatein (str): The path of a file to read and update the "system" role for ChatGPT, does so by appending messages
             useEL (bool, optional): Whether to use Eleven Labs' API to generate and play audio. Defaults to False.
-        Notes:
-            - This method handles all of the chatting.
-            - During the conversation, the user's speech is transcribed, and the response is generated using OpenAI's GPT-3 model.
-            - The conversation history is saved to a file in the specified folder.
-            - If the `update chat` command is spoken, the "system" role will be updated useing the path passed in from updatein
         '''
         while True:
             self.start_conversation(keyword=keyword)
@@ -127,6 +127,7 @@ class ChatGPT:
             save_foldername (str): The name of the folder where the conversation will be saved.
             system_change (str): path to the personality change .txt file
             useEL (bool, optional): If false, the bot generates responses using the system voices
+            usewhipser (bool, optional); If false, uses google speech recognition
         '''
 
         suffix = self.save_conversation(save_foldername)
@@ -178,17 +179,19 @@ class ChatGPT:
 
     def assistant(self, save_foldername, keyword ='hey', useEL = False, usewhisper = False, timeout = 5):
         '''
-        This method acts as more of a "tradtional" smart assistant such as google or alexa.  It waits
-        for some keyword (if not specified, it will be "hey") and then proceeeds to the "conversation".
-        Once in the conversation, you will be able to interact with the assistant as you would normally, but
-        if no speech is detected after 5 seconds (adjustable), the conversation will reset and the assistant will need
-        to be re-initiated with "hey".  
+        This method acts as more of a "tradtional" smart assistant such as google or alexa and is FORGETFUL, meaning it  
+        will start over the current conversation once it times out. This means it's best used for 1 question 
+        and some quick follow-up questions.  It waits for some keyword (if not specified, it will be "hey") and
+        then proceeeds to the "conversation". Once in the conversation, you will be able to interact with the assistant 
+        as you would normally, butif no speech is detected after 5 seconds (adjustable), the conversation will reset and 
+        the assistant will need to be re-initiated with "hey".  
 
         Args:
             save_foldername (str): The name of the folder where the conversation will be saved.
             keyword (str): The keyword(s) that will initiate the conversation
             useEL (bool, optional): If false, the bot generates responses using the system voices
-            timeout = the amount of time the assistant will wait before resetting
+            usewhipser (bool, optional): Defaults to False to use google speech recognition
+            timeout : the amount of time the assistant will wait before resetting
         '''
 
         while True:
@@ -197,7 +200,7 @@ class ChatGPT:
             freq = 1000  # Hz
             winsound.Beep(freq, duration)
 
-            self.start_conversation(keyword = keyword)
+            self.start_conversation(keyword)
             self.messages = [{"role" : "system", "content" : f"{self.mode}"}]
             suffix = self.save_conversation(save_foldername)
             self.generate_voice("I'm listening.", useEL)
@@ -233,13 +236,15 @@ class ChatGPT:
 
     def assistantP(self, save_foldername, keyword ='hey', useEL = False, usewhisper = False, timeout = 5):
         '''
-        Nearly identical to assistant, but maintains a persistent (p) memory of the conversation. 
+        Nearly identical to assistant, but maintains a persistent (p) memory of the conversation.  This means
+        when it timesout after 5 seconds, it will maintain memory of the current conversation up until you restart
+        or the token limit is reached. 
 
         Args:
             save_foldername (str): The name of the folder where the conversation will be saved.
             keyword (str): The keyword(s) that will initiate the conversation
             useEL (bool, optional): If false, the bot generates responses using the system voices
-            usewhisper (bool, optional): If true, uses whisper for transcript, else uses google
+            usewhipser (bool, optional): If false, uses google speech recognition
             timeout : the amount of time the assistant will wait before resetting
         '''
 
@@ -309,14 +314,15 @@ class ChatGPT:
                     continue
     def save_conversation(self, save_foldername:str):
         '''
-        Checks the folder for previous conversations and will get the next suffix that has not been used yet.  It returns suffix number
+        Checks the folder for previous conversations and will get the next suffix that has not been used yet.
 
         Args:
             save_foldername (str) : Takes in the path to save the conversation to.
+        Returns:
+            suffix (int) : Needed to keep track of the conversation name for save_inprogress
         '''
         
         os.makedirs(save_foldername, exist_ok=True)
-
         base_filename = 'conversation'
         suffix = 0
         filename = os.path.join(save_foldername, f'{base_filename}_{suffix}.txt')
@@ -324,9 +330,8 @@ class ChatGPT:
         while os.path.exists(filename):
             suffix += 1
             filename = os.path.join(save_foldername, f'{base_filename}_{suffix}.txt')
-
-        with open(filename, 'w') as file:
-            json.dump(self.messages, file, indent=4)
+        with open(filename, 'w', encoding = 'utf-8') as file:
+            json.dump(self.messages, file, indent=4, ensure_ascii=False)
 
         return suffix
 
@@ -345,18 +350,18 @@ class ChatGPT:
         base_filename = 'conversation'
         filename = os.path.join(save_foldername, f'{base_filename}_{suffix}.txt')
 
-        with open(filename, 'w') as file:
-            json.dump(self.messages, file, indent=4)
+        with open(filename, 'w', encoding = 'utf-8') as file:
+            json.dump(self.messages, file, indent=4, ensure_ascii=False)
 
     def response_completion(self):
         '''
         Notes:
-            - You can modify the parameters in the ChatComplete to change how the bot responds
-                using things like temperature, max_token, etc.  Reference the chatGPT API to 
-                see what parameters are available to use.
+            You can modify the parameters in the ChatComplete to change how the bot responds
+            using things like temperature, max_token, etc.  Reference the chatGPT API to 
+            see what parameters are available to use.
         '''
         completion = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo-0301",
+                model=self.gptmodel,
                 messages=self.messages,
                 temperature=0.8
             )
@@ -367,28 +372,31 @@ class ChatGPT:
     
     def generate_voice(self, response, useEL):
         if useEL == True:
-                self.voice.generate_and_play_audio(f"{response}", playInBackground=False)
+            self.voice.generate_and_play_audio(f"{response}", playInBackground=False)
         else:
             self.engine.say(f"{response}")
             self.engine.runAndWait()
 
     def listen_for_voice(self, timeout:int|None=5):
         with self.mic as source:
-                print("\n Listening...")
-                self.r.adjust_for_ambient_noise(source, duration=0.5)
-                try:
-                    audio = self.r.listen(source, timeout)
-                except:
-                    return []
+            print("\n Listening...")
+            self.r.adjust_for_ambient_noise(source, duration=0.5)
+            try:
+                audio = self.r.listen(source, timeout)
+            except:
+                return []
         print("no longer listening")
         return audio
     
     def whisper(self, audio):
         '''
-
+        Uses the Whisper API to generate audio for the response text. 
 
         Args:
-            audio : AudioData instance used in Speech Recognition
+            audio (AudioData) : AudioData instance used in Speech Recognition, needs to be written to a
+                                file before uploading to openAI.
+        Returns:
+            response (str): text transcription of what Whisper deciphered
         '''
         with open('speech.wav','wb') as f:
             f.write(audio.get_wav_data())
