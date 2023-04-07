@@ -1,11 +1,13 @@
-import os
+import subprocess
 import glob
+import os
 
-os.system("pyinstaller --onefile --distpath=assistants\\ assistants\\one_up.py")
-os.system("pyinstaller --onefile --distpath=assistants\\ assistants\\roleplay.py")
-os.system("pyinstaller --onefile --distpath=assistants\\ assistants\\interview.py")
-os.system("pyinstaller --onefile --distpath=assistants\\ assistants\\assistantp.py")
-os.system("pyinstaller --onefile --distpath=assistants\\ assistants\\assistant.py")
+assistants = ['one_up', 'roleplay', 'interview', 'assistantp', 'assistant']
+distpath = 'assistants'
+
+for assistant in assistants:
+    cmd = f"pyinstaller --onefile --distpath={distpath} {assistant}.py"
+    subprocess.run(cmd, shell=True)
 
 # Delete all .spec files in the current directory
 for spec_file in glob.glob("*.spec"):
