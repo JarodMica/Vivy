@@ -41,6 +41,8 @@ class ChatGPT:
                 self.voice = self.user.get_voices_by_name(voice_name)[0]  # This is a list because multiple voices can have the same name
             except:
                 print("Setting default voice to Rachel")
+                print("(If you set a voice that you made, make sure it matches exactly)"
+                        " as what's on the Eleven Labs page.  Capitilzation matters here.")
                 self.voice = self.user.get_voices_by_name("Rachel")[0] 
         except:
             print("No API Key set for Eleven Labs")
