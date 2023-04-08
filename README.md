@@ -75,3 +75,7 @@ chatbot.assistantP(save_foldername=foldername_dir,
 The other text below the 5 variables are objects and function calls to set-up the voice assisant using the class and function in the voice_assistant module.
 
 Most of the functions in the voice_assistant module have docstrings that you can read to clairfy what it does, but I'm still working on making it more clear.
+
+## Working on / To-do's
+- Incorporate long term memory, preferably local long term memory
+- Change up winsound
