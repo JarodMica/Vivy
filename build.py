@@ -3,11 +3,18 @@ import glob
 import os
 
 assistants = ['one_up', 'roleplay', 'interview', 'assistantp', 'assistant']
-distpath = 'assistants'
+assistants_path = "assistants"
+current_dir = os.path.dirname(os.path.abspath(__file__))
+print(current_dir)
+
+distpath = os.path.join(current_dir, assistants_path)
 
 for assistant in assistants:
-    cmd = f"pyinstaller --onefile --distpath={distpath} {assistant}.py"
-    subprocess.run(cmd, shell=True)
+    cmd = ["pyinstaller",
+           "--onefile",
+            "--distpath=" f"{distpath}",
+            f"{assistants_path}/{assistant}.py"]
+    subprocess.run(cmd, shell=False)
 
 # Delete all .spec files in the current directory
 for spec_file in glob.glob("*.spec"):
