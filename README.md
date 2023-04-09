@@ -4,7 +4,7 @@ This repo utilizes OpenAI's GPT-3.5 Turbo model to engage in personalized conver
 
 The fastest way to try these assistants would be to setup your API keys in the ```key.txt``` file and then run the exe files I have provided.  For this to work, **you must** rename ```keys_example.txt``` to be ```keys.txt```.  To find the exe files, check the latest release for this project https://github.com/JarodMica/Vivy/releases/
 
-## Pertaining YouTube Video
+## YouTube Tutorial 
 https://youtu.be/0qpar5R1VA4
 
 ## EXE Quick Use
