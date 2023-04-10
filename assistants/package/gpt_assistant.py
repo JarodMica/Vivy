@@ -400,6 +400,7 @@ class ChatGPT:
         Returns:
             response (str): text transcription of what Whisper deciphered
         '''
+        self.r.recognize_google(audio) # raise exception for bad/silent audio
         with open('speech.wav','wb') as f:
             f.write(audio.get_wav_data())
         speech = open('speech.wav', 'rb')
