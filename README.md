@@ -31,6 +31,8 @@ If you say quit, it will quit.
 - ```soundfile```
 - ```pyaudio```
 
+**As well,** python 3.10 is needed in order for this to work. Anything higher or lower is not supported, so be sure to download python 3.10.
+
 To install all of these, you can use the ```requirements.txt``` file in the repo.  To do this, the command is:
 ```pip install -r requirements.txt```
 
