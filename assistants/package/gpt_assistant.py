@@ -54,7 +54,7 @@ class ChatGPT:
         self.mic = sr.Microphone(device_index=device_index)
 
         # Set-up the system of chatGPT
-        with open(personality, "r") as file:
+        with open(personality, "r", encoding="utf-8") as file:
             self.mode = file.read()
 
         self.messages  = [
@@ -165,7 +165,7 @@ class ChatGPT:
                     # if the bot responds with this, changes "system" behavior
                     if "interview" and "is over" in response.lower():
                         system_change=system_change
-                        with open(system_change, "r") as file:
+                        with open(system_change, "r", encoding="utf-") as file:
                             system = file.read()
 
                         for message in self.messages:
