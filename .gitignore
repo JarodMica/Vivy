@@ -1,0 +1,4 @@
+assistants/__pycache__/*
+assistants/keys.txt
+assistants/package/__pycache__/* 
+assistants/conversations/*
