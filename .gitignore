@@ -1,0 +1,24 @@
+# ignore files
+keys.py
+keys.txt
+assistants/keys.txt
+assistants/keys.yaml
+batch_to_exe.txt
+interview.spec
+
+#ignore filetype
+*.spec
+*.exe
+*.pyc
+*.wav
+*.zip
+
+
+# ignore folders
+conversations/
+older prompts/
+__pycache__/
+dist/
+build/
+venv/
+.venv/
