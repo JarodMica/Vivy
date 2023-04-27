@@ -1,6 +1,7 @@
 import subprocess
 import glob
 import os
+import shutil
 
 assistants = ['one_up', 'roleplay', 'interview', 'assistantp', 'assistant','chat']
 assistants_path = "assistants"
@@ -19,5 +20,7 @@ for assistant in assistants:
 # Delete all .spec files in the current directory
 for spec_file in glob.glob("*.spec"):
     os.remove(spec_file)
+# Removes build folder (if you don't want this, you can comment this out)
+shutil.rmtree("build")
 
 input("Press Enter to continue...")

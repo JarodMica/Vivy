@@ -6,3 +6,4 @@ sounddevice
 soundfile
 pyaudio
 pyyaml
+pyinstaller

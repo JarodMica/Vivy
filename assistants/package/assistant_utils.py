@@ -1,5 +1,6 @@
 import json
 import os
+import winsound
 import sounddevice as sd
 import soundfile as sf
 
@@ -8,8 +9,16 @@ def check_quit(user_input:str):
         raise SystemExit
     
 def beep():
-        data, samplerate = sf.read("assistants\\package\\resources\\beep.mp3")
+    try:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        beep_path = os.path.join(script_dir, "resources", "beep.mp3")
+        data, samplerate = sf.read(beep_path)
         sd.play(data, samplerate)
+    except:
+        # If `soundfile` fails, play a system beep instead
+        duration = 500
+        frequency = 500
+        winsound.Beep(frequency, duration)
 
 def save_conversation(messages, save_foldername:str):
     '''

@@ -1,6 +1,7 @@
+import sys 
 import os
-import sys
-from package.gpt_assistant import ChatGPT
+
+from package import gpt_assistant
 from utils import get_file_paths
 
 # The only variables that need to be modifed
@@ -13,7 +14,8 @@ usewhisper = True
 
 # This code block only checks if it's being ran as a python script or as an exe
 if getattr(sys, 'frozen', False):
-    script_dir = os.path.dirname(os.path.abspath(sys.executable))
+    # script_dir = os.path.dirname(os.path.abspath(sys.executable))
+    script_dir = sys._MEIPASS
     while True:
         user_input = input("Are you using an Eleven Labs voice (yes/no)?\n")
         if user_input == 'yes':
@@ -32,7 +34,7 @@ foldername_dir, personality_dir, keys, syschange_dir = get_file_paths(script_dir
                                                                      personality, 
                                                                      system_change)
 
-chatbot = ChatGPT(personality=personality_dir, 
+chatbot = gpt_assistant.ChatGPT(personality=personality_dir, 
                   keys=keys, 
                   voice_name=voicename
                   )

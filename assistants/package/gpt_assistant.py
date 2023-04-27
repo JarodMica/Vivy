@@ -3,12 +3,13 @@ import openai
 import pyttsx3
 import time
 import yaml
+from .assistant_utils import *
 
 from elevenlabslib import *
-from package.assistant_utils import *
+
 
 class ChatGPT:
-    def __init__(self, personality:str, keys:str, voice_name="Rachel", device_index=0):
+    def __init__(self, personality:str, keys:str, voice_name="Rachel", device_index=None):
         '''
         Initialize the ChatGPT class with all of the necessary arguments
 
@@ -144,7 +145,7 @@ class ChatGPT:
                 if usewhisper == True:
                     user_input = self.whisper(audio)
                     print("You said: ", user_input) # Checking
-                else:    
+                else:  
                     user_input = self.r.recognize_google(audio)
                 
             except Exception as e:

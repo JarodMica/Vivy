@@ -1,6 +1,7 @@
+import sys 
 import os
-import sys
-from package.gpt_assistant import ChatGPT
+
+from package import gpt_assistant
 from utils import get_file_paths
 
 # The only variables that need to be modifed
@@ -30,11 +31,11 @@ foldername_dir, personality_dir, keys = get_file_paths(script_dir,
                                                        foldername, 
                                                        personality)
 
-chatbot = ChatGPT(personality=personality_dir, 
-                  keys=keys, 
-                  voice_name=voicename
-                  )
+chatbot = gpt_assistant.ChatGPT(personality=personality_dir, 
+                keys=keys, 
+                voice_name=voicename
+                )
 chatbot.assistantP(save_foldername=foldername_dir,
-                   useEL=useEL,
-                   usewhisper=usewhisper
-                   )
+                useEL=useEL,
+                usewhisper=usewhisper
+                )
