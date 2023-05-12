@@ -9,7 +9,7 @@ from elevenlabslib import *
 
 
 class ChatGPT:
-    def __init__(self, personality:str, keys:str, voice_name="Rachel", device_index=None):
+    def __init__(self, personality:str, keys:str, voice_name="Rachel", device_index=None, gptmodel:str="gpt-3.5-turbo"):
         '''
         Initialize the ChatGPT class with all of the necessary arguments
 
@@ -18,6 +18,7 @@ class ChatGPT:
             keys (str)          : path to the keys.txt file
             voice_name (str)    : Eleven Labs voice to use
             device_index (int)  : microphone device to use (0 is default)
+            gptmodel (str)      : choose the openai GPT model to use
         '''
         # Read in keys
         with open(keys, "r") as file:
@@ -32,7 +33,7 @@ class ChatGPT:
         # GPT Set-Up
         self.OPENAI_KEY = keys['OPENAI_KEY']
         openai.api_key = self.OPENAI_KEY
-        self.gptmodel = "gpt-3.5-turbo"
+        self.gptmodel = gptmodel
 
         # Eleven Labs Set-up
         try:
