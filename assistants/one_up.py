@@ -1,7 +1,8 @@
 import sys 
 import os
 
-from package import gpt_assistant
+from package import kokoro
+from package import assistant
 from utils import get_file_paths
 
 # The only variables that need to be modifed
@@ -27,16 +28,17 @@ if getattr(sys, 'frozen', False):
 else:
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
-foldername_dir, personality_dir, keys = get_file_paths(script_dir, 
-                                                       foldername, 
-                                                       personality)
+foldername_dir, personality_dir, keys = get_file_paths(script_dir, foldername, personality)
 
-chatbot = gpt_assistant.ChatGPT(personality=personality_dir,
-                  keys=keys, 
-                  voice_name=voicename
-                  )
+# Initialize the chat assitant with the variables that you've set 
 
-chatbot.assistant(save_foldername=foldername_dir,
-                   useEL=useEL,
-                   usewhisper=usewhisper
-                   )
+chatbot = kokoro.Kokoro(personality=personality_dir, 
+                keys=keys, 
+                voice_name=voicename
+                )
+assistant_ = assistant.Assistant(chatbot)
+
+assistant_.run(save_foldername=foldername_dir,
+            useEL=useEL,
+            usewhisper=usewhisper
+            )

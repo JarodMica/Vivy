@@ -1,7 +1,8 @@
 import sys 
 import os
 
-from package import gpt_assistant
+from package import kokoro
+from package import interview
 from utils import get_file_paths
 
 # The only variables that need to be modifed
@@ -34,11 +35,13 @@ foldername_dir, personality_dir, keys, syschange_dir = get_file_paths(script_dir
                                                                      personality, 
                                                                      system_change)
 
-chatbot = gpt_assistant.ChatGPT(personality=personality_dir, 
+chatbot = kokoro.Kokoro(personality=personality_dir, 
                   keys=keys, 
                   voice_name=voicename
                   )
-chatbot.interview(save_foldername=foldername_dir,
+assistant = interview.Interview(chatbot)
+
+assistant.run(save_foldername=foldername_dir,
                   system_change=syschange_dir,
                    useEL=useEL,
                    usewhisper=usewhisper
