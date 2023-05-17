@@ -87,7 +87,7 @@ class Kokoro:
                 for i, word in enumerate(user_input):
                     check_quit(word)
 
-    def response_completion(self):
+    def response_completion(self, append=True):
         '''
         Notes:
             You can modify the parameters in the ChatComplete to change how the bot responds
@@ -100,7 +100,8 @@ class Kokoro:
                 temperature=0.8
             )
         response = completion.choices[0].message.content
-        self.messages.append({"role": "assistant", "content": response})
+        if append:
+            self.messages.append({"role": "assistant", "content": response})
         print(f"\n{response}\n")
         return response
     

@@ -15,8 +15,10 @@ class Chat:
 
         Args:
             save_foldername (str): The name of the folder to save the conversation history in.
+            keyword (str) : The keyword to get the assistant listening
             updatein (str): The path of a file to read and update the "system" role for ChatGPT, does so by appending messages
             useEL (bool, optional): Whether to use Eleven Labs' API to generate and play audio. Defaults to False.
+            usewhisper (bool, optional): Whether to use Whisper for voice recognition.  Defaults to False.
         '''
         while True:
             self.chatGPT.start_conversation(keyword=keyword)
