@@ -7,3 +7,4 @@ soundfile
 pyaudio
 pyyaml
 pyinstaller
+pytchat

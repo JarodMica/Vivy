@@ -2,17 +2,20 @@ import time
 
 from .kokoro import Kokoro
 from .assistant_utils import *
+from .tortoise_api import  Tortoise_API
+from .tortoise_api import filter_paragraph
 
 class Streamer:
     '''
     This takes in two instantiations of Kokoro, so make sure to set them
     both up in the assistant script
     '''
-    def __init__(self, chatGPT: Kokoro, attention: Kokoro):
+    def __init__(self, chatGPT: Kokoro, attention: Kokoro, tortoise: Tortoise_API | None = None):
         self.chatGPT = chatGPT
         self.attention = attention
+        self.tortoise = tortoise
 
-    def run(self, save_foldername, useEL=False, usewhisper=False, timeout = 1):
+    def run(self, save_foldername, useEL=False, usewhisper=False, timeout = 1, assistant_name: str = "Vivy"):
         # Create two agents: 
         # one to generate conversation generate_response()
         # one to filter user input attention()
@@ -38,6 +41,7 @@ class Streamer:
                 check_quit(user_input)
 
                 modified_text = self.attention.mode.replace('<<user_input>>', user_input)
+                modified_text = modified_text.replace('<<name>>', assistant_name)
                 self.attention.messages = [{"role" : "user", "content" : modified_text}]
                 check_attention = self.attention.response_completion()
                 
@@ -77,7 +81,12 @@ class Streamer:
     def streamer_completion(self, save_foldername, suffix, useEL):
         try:
             response = self.chatGPT.response_completion()
-            self.chatGPT.generate_voice(response, useEL)
+            if self.tortoise:
+                sentences = filter_paragraph(response)
+                self.tortoise.run(sentences) #sentence tortoise
+            else:
+                self.chatGPT.generate_voice(response, useEL)
+
             save_inprogress(self.chatGPT.messages, suffix, save_foldername)
         except:
             print("Token limit exceeded, clearing messsages list and restarting")

@@ -1,9 +1,10 @@
 import speech_recognition as sr
 import openai
 import pyttsx3
+import time
 import yaml
-from .assistant_utils import *
 
+from .assistant_utils import *
 from elevenlabslib import *
 
 
@@ -94,12 +95,21 @@ class Kokoro:
             using things like temperature, max_token, etc.  Reference the chatGPT API to 
             see what parameters are available to use.
         '''
-        completion = openai.ChatCompletion.create(
-                model=self.gptmodel,
-                messages=self.messages,
-                temperature=0.8
-            )
-        response = completion.choices[0].message.content
+        for _ in range(3):
+            try:
+                completion = openai.ChatCompletion.create(
+                    model=self.gptmodel,
+                    messages=self.messages,
+                    temperature=0.8
+                )
+                response = completion.choices[0].message.content
+                break  # Break out of the loop if the code execution is successful
+            except Exception as e:
+                print("Something happened on OpenAI's end:", str(e))
+                time.sleep(10)  # Pause for 10 seconds before the next attempt
+        else:
+            print("Failed after 3 attempts. Exiting the program.")
+            
         if append:
             self.messages.append({"role": "assistant", "content": response})
         print(f"\n{response}\n")
