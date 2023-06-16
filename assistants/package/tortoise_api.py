@@ -6,15 +6,34 @@ import os
 import sounddevice as sd
 import soundfile as sf
 import yaml
+from .assistant_utils import *
 
 
 class Tortoise_API:
+    '''
+    API calls to the tortoise GUI using requests.  Must have an open instance of
+    tortoise TTS GUI running or else nothing will happen. For most cases, to use this
+    you need to use filter_paragraph() to splice text into a list of sentences, then
+    feed that list 1-by-1 into call_api.  The idea is to speed up the process so that you can
+    generate audio while audio is being spoken
+    '''
     def __init__(self):
         self.audio_queue = Queue()
         self.free_slots = Queue()
         self.semaphore = threading.Semaphore(1)
 
-    def call_api(self, sentence, is_queue=True):
+    def call_api(self, sentence, is_queue=False):
+        '''
+        Makes a request to the Tortoise TTS GUI.  Relies on tort.yaml, so make sure it's set-up
+
+        Args:
+            sentence (str) : Text to be converted to speech
+            is_queue (bool) : Only set to True if using as standalone script.  Uses built in queue
+                            system to queue up 6 samples of audio to be read out loud.
+        
+        Returns:
+            audio_path (str) : Path of the audio to be played
+        '''
         tort_conf = load_config()
     
         while True:
@@ -74,6 +93,7 @@ class Tortoise_API:
             self.audio_queue.task_done()
             self.free_slots.put(slot)
 
+    # Usually only ran if using this as a standalone script, most likely you won't be
     def run(self, sentences):
         with concurrent.futures.ThreadPoolExecutor() as executor:
             for i in range(1, 6):
@@ -90,31 +110,6 @@ class Tortoise_API:
             self.audio_queue.join()
             self.audio_queue.put(("stop", None))
 
-def filter_paragraph(paragraph):
-    paragraph = paragraph.replace('\n', ' ')  # Replace new lines with spaces
-    sentences = paragraph.split('. ')
-    filtered_list = []
-    current_sentence = ""
-
-    for sentence in sentences:
-        if len(current_sentence + sentence) <= 130:
-            current_sentence += sentence + '. '
-        else:
-            if current_sentence.strip():  # Check if the current sentence is not just spaces
-                filtered_list.append(current_sentence.strip())
-            current_sentence = sentence + '. '
-
-    if current_sentence.strip():  # Check if the current sentence is not just spaces
-        filtered_list.append(current_sentence.strip())
-
-    return filtered_list
-
-
-def read_paragraph_from_file(file_path):
-    with open(file_path, 'r') as file:
-        paragraph = file.read()
-    return paragraph
-
 def load_config():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     yaml_file = os.path.join(current_dir, "tort.yaml")
@@ -123,8 +118,6 @@ def load_config():
         tort_conf = yaml.safe_load(file)
 
     return tort_conf
-
-
 
 if __name__ == "__main__":
     file_path = "story.txt"

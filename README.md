@@ -2,7 +2,7 @@
 
 This repo utilizes OpenAI's GPT-3.5 Turbo model to engage in personalized conversations with users, catering to their preferred communication style. As GPT-3.5 Turbo serves as the foundation for ChatGPT, this project essentially shares its underlying model. Ultimately, the aim of this project is to develop a personal assistant that emulates human-like interactions. As the project is a work in progress, its features will expand as I continue to refine and iterate on the concept.
 
-I highly recommend you run the python scripts as there are bugs with the exe files on Windows 11.  But, the fastest way to try these assistants would be to setup your API keys in the ```key.yaml``` file and then run the exe files I have provided.  For this to work, **you must** rename ```keys_example.yaml``` to be ```keys.yaml```.  To find the exe files, check the latest release for this project https://github.com/JarodMica/Vivy/releases/
+Currently there are issue with the exe versions, but I'm working on an easy way to just download and run everything. Currently, the fastest way to try these assistants would be to setup your API keys in the ```key.yaml``` file, clone the repo, and then run the python scripts in the assistants folder.  For this to work, **you must** rename ```keys_example.yaml``` to be ```keys.yaml```.  
 
 ## YouTube Tutorial 
 Most recent: https://youtu.be/0qpar5R1VA4
@@ -10,20 +10,25 @@ Most recent: https://youtu.be/0qpar5R1VA4
 ## Features
 :heavy_check_mark: Voice recognition and voice responses
 
-:heavy_check_mark: Integration with ChatGPT for responses and ElevenLabs for natural sounding text-to-speech
+:heavy_check_mark: Integration with ChatGPT for responses 
 
-:heavy_check_mark: Easy customization for personalities of the AI assistants, with funtionality variations of the assistants
+:heavy_check_mark: Support for different TTS engines: ElevenLabs, Tortoise-tts, and more coming 
+
+:heavy_check_mark: Support for local voice TTS with Tortoise-tts (requires a beefy GPU atm)
+
+:heavy_check_mark: Easy customization for personalities of the AI assistants, with small funtionality variations of the assistants
 
 :heavy_check_mark: Local conversation history stored for your own information (assistant does not reference them yet)
 
 ## Enhancements in the Pipeline 
 - [ ] Speech Emotion Recognition (SER) - Ability to recognize the speakers emotion based on tone and be able to use this in better assessing the user
 - [ ] Facial Emotion Recognition (FER) - Ability to recognize the emotion of the speaker by analyzing frames of a webcam feed/camera to assess the user
-- [ ] Local models for voice inferencing - No need to rely on ElevenLabs for "natural voice output", possible to use https://github.com/coqui-ai/TTS 
-- [ ] Local long term memory - Ability to remember previous conversations with the user and store it locally, must be fast and efficient
+- [ ] Local long term memory - Ability to remember previous conversations with the user and store it locally, must be fast and efficient (in progress with chromaDB)
+- [ ] Function calling - The latest GPT models introduced function calling and I can see this being pretty useful
+- [ ] Specify EL audio to specific devices
 
 ## To be created for different assistant types
-- [ ] Current assistant types: chat(), interview(), assistant(), assistantp()
+- [ ] Current assistant types: chat(), interview(), assistant(), assistantp(), ai_streamer(), streamer()
 - [ ] Streamer - acts as a co-host to a stream, determines when to speak
 - [ ] Vtuber - Just go look at Neurosama.  Might not even be encompassable by Vivy, might have to be its own repo
 

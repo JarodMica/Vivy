@@ -1,7 +1,6 @@
 import os
 
 from package import kokoro
-from package import tortoise_api
 from package import ai_streamer
 from package import youtube_api
 from utils import get_file_paths
@@ -12,9 +11,8 @@ personality = "aistreamer"
 # attention_personality = "attention"
 voicename = "Rem"
 assistant_name = "Emi"
-useEL = False
-# usewhisper = False
-useTortoise = True
+tts = "tortoise"
+video_id = "MxpzI8e6Gxo"
 
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -24,29 +22,18 @@ foldername_dir, personality_dir, keys = get_file_paths(script_dir,
                                                        foldername, 
                                                        personality)
 
-# attention_dir = get_personality_dir(script_dir, attention_personality)
-
 # Instantiate classes
-chatbot = kokoro.Kokoro(personality=personality_dir, 
+_kokoro = kokoro.Kokoro(personality=personality_dir, 
                         keys=keys, 
-                        voice_name=voicename
+                        voice_name=voicename,
+                        tts = tts,
+                        tortoise_autoplay=False
                         )
 
 # Starts the comment collection thread
-# video_id = input("Enter Video ID: ")
-video_id = "MxpzI8e6Gxo"
 youtube = youtube_api.YoutubeAPI(video_id, max_queue_length=2, collection_cycle_duration=2)
 youtube.start()
-
-if useTortoise:
-    tortoise = tortoise_api.Tortoise_API()
-else:
-    print("No Tortoise installation")
-    tortoise = None
-    pass
-
-assistant = ai_streamer.AI_Streamer(chatbot, 
+assistant = ai_streamer.AI_Streamer(_kokoro, 
                                     youtube, 
-                                    foldername_dir, 
-                                    tortoise)
+                                    foldername_dir)
 assistant.run()

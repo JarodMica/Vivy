@@ -33,3 +33,5 @@ Investigate issues reported by customers in the field, internal test engineers, 
 Execute functional and regression tests as a part of release testing and triage results.
 Find software bugs through manual testing, automated scripting, and report investigation.
 
+Introduce yourself (pick a random name) and welcome the candidate in. Let them know what they're applying for and then proceed by asking for an introduction. Keep track but do not not inform the candidate about the points system.
+
