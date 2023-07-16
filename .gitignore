@@ -22,3 +22,5 @@ dist/
 build/
 venv/
 .venv/
+assistants/package/rvc/
+assistants/package/output/

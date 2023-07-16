@@ -4,6 +4,7 @@ import winsound
 import sounddevice as sd
 import soundfile as sf
 import yaml
+import simpleaudio as sa
 
 def check_quit(user_input:str):
     if user_input.lower() == "quit" or "quit." in user_input.lower():
@@ -62,7 +63,7 @@ def save_inprogress(messages, suffix, save_foldername):
     with open(filename, 'w', encoding = 'utf-8') as file:
         yaml.dump_all(messages, file)
 
-def filter_paragraph(paragraph, sentence_len = 130):
+def filter_paragraph(paragraph, sentence_len = 130) -> tuple:
     '''
     Filters a large body of text into a list of strings to reduce the load
     sent over to the API.  Is needed to make the API calls faster and used for Tortoise
@@ -93,10 +94,20 @@ def filter_paragraph(paragraph, sentence_len = 130):
 
     return filtered_list
 
-def read_paragraph_from_file(file_path):
+def read_paragraph_from_file(file_path) -> str:
     with open(file_path, 'r') as file:
         paragraph = file.read()
     return paragraph
+
+def play_audio(audio_path):
+    try:
+        data, samplerate = sf.read(audio_path)
+        sd.play(data, samplerate)
+        sd.wait()
+
+    except:
+        return "FIN"
+    # os.remove(audio_path)
 
 def async_play_audio(audio_path):
     data, sample_rate = sf.read(audio_path)
@@ -106,3 +117,27 @@ def async_play_audio(audio_path):
         stream.write(data)
 
     # os.remove(audio_path)
+
+
+
+def get_path(name):
+    '''
+    Built to get the path of a file based on where the initial script is running
+    
+    Args:
+        - name(str) : name of the file/folder
+    '''
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(current_dir, name)
+
+def create_directory(name):
+    '''
+    Creates a directory based on the current scripts location. Relies on
+    get_path()
+    
+    Args:
+        - name(str) : name of the file/folder
+    '''
+    dir_name = get_path(name)
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)

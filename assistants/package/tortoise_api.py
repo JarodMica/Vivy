@@ -36,13 +36,16 @@ class Tortoise_API:
         '''
         tort_conf = load_config()
     
-        while True:
+        max_attempts = 3
+        attempt_count = 0
+
+        while attempt_count < max_attempts:
             try:
                 print(f"Calling API with sentence: {sentence}")
                 response = requests.post("http://127.0.0.1:7860/run/generate", json={
                     "data": [
                         f"{sentence}", #prompt
-                        tort_conf['delimiter'], #delimter
+                        tort_conf['delimiter'], #delimiter
                         tort_conf['emotion'], #emotion
                         tort_conf['custom_emotion'], #custom emotion
                         tort_conf['voice_name'], #voice name
@@ -71,7 +74,8 @@ class Tortoise_API:
                 print(f"API response received with audio path: {audio_path}")
                 break
             except:
-                print("tortoise failed, trying again")
+                print(f"tortoise failed, trying again, attempt {attempt_count + 1}")
+                attempt_count += 1
                 continue
 
         if is_queue:

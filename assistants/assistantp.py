@@ -6,9 +6,9 @@ from utils import get_file_paths
 
 # The only variables that need to be modifed
 foldername = "assistantP"
-personality = "assistantP"
+personality = "roleplay"
 voicename = "Rem"
-tts = "system"
+tts = "rvc"
 speech_recog = "whisper"
 
 # removed the block here that was meant for a pyinstaller exe due to the exe files not working properly

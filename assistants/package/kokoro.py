@@ -3,12 +3,53 @@ import openai
 import pyttsx3
 import time
 import yaml
+import threading
+import multiprocessing
+
+from pydub.utils import mediainfo
+from queue import Queue
+from multiprocessing import Process
 
 from .assistant_utils import *
 from .tortoise_api import Tortoise_API
 from elevenlabslib import *
+from .rvc_infer import rvc_run
 
 # Note to self, refactor code to use some type of list and index what TTS to use
+def rvc_queue(q, done_q):
+    while True:  # Could create zombie processes
+        audio_path, opt_dir = q.get()
+        rvc_run(audio_path, opt_dir)
+        done_q.put(True)  # Signal that we're done processing this item
+
+def worker(queue, done_event):
+    while True:
+        item = queue.get()
+        try:
+            final_audio = play_audio(item)
+            queue.task_done()
+
+            if final_audio == "FIN":
+                done_event.set()
+                break
+
+        except Exception as e:
+            print(f"Error in worker thread: {e}")
+
+
+def get_audio_duration(file_path):
+    """
+    Get the duration of an audio file.
+
+    Args:
+        file_path (str): Path to the audio file.
+
+    Returns:
+        float: Duration of the audio file in seconds.
+    """
+    audio_info = mediainfo(file_path)
+    duration = float(audio_info['duration'])
+    return duration
 
 class Kokoro:
     def __init__(self, 
@@ -64,18 +105,27 @@ class Kokoro:
                     print("(If you set a voice that you made, make sure it matches exactly)"
                             " as what's on the Eleven Labs page.  Capitilzation matters here.")
                     self.voice = self.user.get_voices_by_name("Rachel")[0] 
-            elif self.tts == "tortoise":
+            elif self.tts == "tortoise" or "rvc":
                 self.tortoise = Tortoise_API()
                 self.tortoise_autoplay = tortoise_autoplay
+                # Queues for tortoise
+                self.audio_queue = Queue()
+                self.worker_thread = None
+                self.done_event = threading.Event()
+                self.proc = None
+                self.q = multiprocessing.Queue()
+                self.done_q = multiprocessing.Queue()
+                self.suffix_counter = 1  # Initial suffix
             else:
-                raise Exception
-        except:
-            print("No API Key set for Eleven Labs or Tortoise installation.  If valid Tortoise TTS installation, "
-                  "make sure to pass in tortoise_autoplay.  Using system voice")
+                raise Exception("No valid TTS inputted into kokoro or SYSTEM chosen")
+        except Exception as e:
+            print(e)
             self.engine = pyttsx3.init()
             # self.engine.setProperty('rate', 180) #200 is the default speed, this makes it slower
             self.voices = self.engine.getProperty('voices')
             self.engine.setProperty('voice', self.voices[1].id) # 0 for male, 1 for female
+
+        
 
         # Mic Set-up
         self.r = sr.Recognizer()
@@ -90,6 +140,8 @@ class Kokoro:
         self.messages  = [
             {"role": "system", "content": f"{self.mode}"}
         ]
+
+
 
  # Methods the assistants rely on------------------------------------------------------------------------------------------------------------------
 
@@ -137,9 +189,9 @@ class Kokoro:
                 response = completion.choices[0].message.content
                 break  # Break out of the loop if the code execution is successful
             except openai.APIError as e:
-                if "Token limit exceeded" in str(e):
+                if "maximum context" in str(e):
                     print("Token limit exceeded, clearing messages list and restarting")
-                    self.messages = [{"role": "system", "content": f"{self.kokoro.mode}"}]
+                    self.messages = [{"role": "system", "content": f"{self.mode}"}]
                     self.suffix = get_suffix(self.save_folderpath)
                     continue
                 elif "overloaded" in e.split():
@@ -150,6 +202,7 @@ class Kokoro:
                     time.sleep(10)  # Pause for 10 seconds before the next attempt
             except Exception as e:  # Catch other unexpected exceptions
                 print("An unexpected error occurred:", str(e))
+                self.messages = [{"role": "system", "content": f"{self.mode}"}]
                 time.sleep(10)
         else:
             print("Failed after 3 attempts. Exiting the program.")
@@ -160,13 +213,15 @@ class Kokoro:
         return response
 
     
+
+
     def generate_voice(self, sentence):
         '''
         Generate a TTS output based on the chosen engine.  Tortoise defaults to true for
         auto play, however, some assistants like AI streamer want the audio path instead
         to queue up audio to play.
 
-        Available options: [tortoise, elevenlabs, system (default)]
+        Available options: [tortoise, rvc, elevenlabs, system (default)]
 
         Args:
             sentence(str) : text to send over to tts engine
@@ -179,17 +234,71 @@ class Kokoro:
             if self.tortoise_autoplay == True:
                 # This is needed in order to cut down long sentences into more manageable chunks
                 sentences = filter_paragraph(sentence)
+                
                 for sentence in sentences:
                     audio_path = self.tortoise.call_api(sentence)
-                    async_play_audio(audio_path)
+                    # Start the worker thread if it's not already running
+                    if self.worker_thread is None or not self.worker_thread.is_alive():
+                        self.worker_thread = threading.Thread(target=worker, args=(self.audio_queue, self.done_event))
+                        self.worker_thread.start()
+                    # Add the audio file to the queue
+                    self.audio_queue.put(audio_path)
+                self.audio_queue.put("FIN")
+
+                # Join the worker thread here
+                self.worker_thread.join()
             else:
                 audio_path = self.tortoise.call_api(sentence)
                 return audio_path
+            
+        elif self.tts == "rvc":
+            create_directory("output")
+            opt = get_path("output")
+            opt_dir = os.path.join(opt, f"rvc_out_{self.suffix_counter}.wav")
+            self.suffix_counter = (self.suffix_counter % 5) + 1  # Increment the counter and wrap around after 5
+            with open(opt_dir, 'a') as f:
+                pass
+            if self.tortoise_autoplay == True:
+                # This is needed in order to cut down long sentences into more manageable chunks
+                sentences = filter_paragraph(sentence)
+                for sentence in sentences:
+                    audio_path = self.tortoise.call_api(sentence)
+                    rvc_run(audio_path, opt_dir)
+                    
+                    # Start the worker thread if it's not already running
+                    if self.worker_thread is None or not self.worker_thread.is_alive():
+                        self.worker_thread = threading.Thread(target=worker, args=(self.audio_queue,self.done_event))
+                        self.worker_thread.start()
+                        
+                    # Add the audio file to the queue
+                    self.audio_queue.put(opt_dir)
+                self.audio_queue.put("FIN")
+                # Join the worker thread here
+                self.worker_thread.join()
+            else:
+                audio_path = self.tortoise.call_api(sentence)
+
+                # Create a Process for rvc_run
+                if self.proc is None or not self.proc.is_alive():
+                    self.proc = multiprocessing.Process(target=rvc_queue, args=(self.q, self.done_q))
+                    self.proc.start()  # Starts the new process
+                self.q.put((audio_path, opt_dir))
+                
+                # Wait for a signal in the done queue
+                done_signal = self.done_q.get()
+                if done_signal:
+                    return opt_dir
+
+
         elif self.tts == "elevenlabs":
             self.voice.generate_and_play_audio(f"{sentence}", playInBackground=False)
         else: # default engine (windows voice)
             self.engine.say(f"{sentence}")
             self.engine.runAndWait()
+
+        self.done_event.wait()
+        
+        print("Finished reading the audio paths.")
 
     def listen_for_voice(self, timeout:int|None=5):
         with self.mic as source:
@@ -244,3 +353,5 @@ class Kokoro:
     
     def save_conversation(self):
         save_inprogress(self.messages, self.suffix, self.save_folderpath)
+
+

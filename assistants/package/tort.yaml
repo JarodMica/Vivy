@@ -1,13 +1,13 @@
 delimiter : "\n"
 emotion : "None"
 custom_emotion : ""
-voice_name : "ino"
-audio_file : "ino.wav"
+voice_name : "mumei_nanashi"
+audio_file : ""
 voice_chunks : 0
 candidates : 1
 seed : 0
 samples : 2
-iterations : 50
+iterations : 25
 temperature : 1
 diffusion_sampler: "P"
 pause_size : 8

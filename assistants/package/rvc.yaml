@@ -1,0 +1,14 @@
+transpose: 0
+audio_file: "C:\\Users\\jarod\\OneDrive\\Desktop\\code\\Retrieval-based-Voice-Conversion-WebUI\\songs\\1_idol_(Vocals).wav"
+output_file: "C:\\Users\\jarod\\OneDrive\\Desktop\\code\\Retrieval-based-Voice-Conversion-WebUI\\songs\\idol_processed.wav"
+model_path: "rvc\\weights\\marine.pth"
+device: "cuda:0"
+is_half: "False"
+f0method: "crepe"
+file_index: "rvc\\logs\\marine\\added_IVF5870_Flat_nprobe_1_marine_v2.index"
+file_index2: ""
+index_rate: 1
+filter_radius: 3
+resample_sr: 0
+rms_mix_rate: 1.0
+protect: 0.33

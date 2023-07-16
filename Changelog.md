@@ -1,4 +1,33 @@
 # Changelog
+## 7/16/2023
+Made some enhancements for the AI Streamer and tried off stream, but the generations were STUPID slow.  Originally, I had it done in another queue and this queue was closed after running RVC.  This caused RVC to be unloaded each time, making it take SOO long.  I was wondering why it worked so well in assistantp.py after it started going and this was why...
+- The queue now is instantiated in the __init__ part of kokoro along with the other queues.  Then, when it's needed I check inside of generate_voice if the queue has already been started and if not, it'll start this queue.
+- Then the only thing that is needed is to put audio into the process queue... so it's in an infinite queue.  Zombies perhaps, but just getting things works lol.
+- For this, a new function rvc_queue() was created which is what stays alive for this queue to run on in the background
+### Observations & notes
+- There is a weird issue that occurs where the voice goes DEEP for some reason... I need to check this out.
+- In retrospec, I should've made the "assistants" folder the parent folder...... but it's ok
+
+
+## 7/14/2023
+Continuing work on the RVC integration, this caused me a huge headache today as this is way over my head at the moment.
+- The AI_Streamer class is heavily reliant upon threads and before, this was OKAY because I wasn't trying to run any heavy processes on it.  ですが, RVC inference seems to be heavily CPU based, so when trying to fulfill this request in a single core, the script was taking WAY too long to produce an audio sample and I'm assuming this is due to the GIL not actually being true paralellism in threading.
+- The solution to this is to run the rvc_run() function inside of Kokoro.generate_voice in a separate process using multiprocess instead rather than allowing it to just run via the ai_streamer.py's own tts_generation() function.
+- I'm assuming this now moves it over to another core to the the processing so that it's not split between like 15 different threads on a sigle core
+- As well, I tried converting everything to multiprocessing, but this was the cause of the headache because of some pickling issue, etc.  Unfortunately, my knowledge is not deep enough in this area to understand the full reasoning.
+
+
+## 7/9/2023
+Starting to work on integrating RVC into the pipeline for tortoise, some notes to take:
+- Added an ```rvc``` folder into the ```package``` that can be installed by navigating into the RVC directory with ```pip install -e .```.  The current commit # for RVC is: 211e13b80a4bf13d683f199d75a2f88dd50b7444
+- Added an ```rvc_infer.py``` file that can be used to convert audio into an RVC trained voice based on myinferer.py from the RVC HF
+- Added an ```rvc.yaml``` file that is used to configure RVC settings
+- Changed up the audio generation logic in ```generate_voice``` as it wasn't working as I had intended for tortoise and rvc.  Ended up needing to open up async_play in another thread and putting audio paths into a queue to be played
+- 
+### Some Thoughts
+- May need to configure the requirements to exclude torch if user does not want to run with RVC as these are some hefty files
+
+
 ## 6/15/2023
 The major change here was the refactoring and moving around of functions/methods, but overall, everything works pretty much exactly the same as before.
 - Refactored the code to reduce the amount of parameters being passed over into each individual assistant class.  Instead, a bulk majority of that is now instantiated when calling the main kokoro class
