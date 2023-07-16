@@ -14,7 +14,7 @@ Most recent: https://youtu.be/0qpar5R1VA4
 
 :heavy_check_mark: Support for different TTS engines: ElevenLabs, Tortoise-tts, and more coming 
 
-:heavy_check_mark: Support for local voice TTS with Tortoise-tts (requires a beefy GPU atm)
+:heavy_check_mark: Supports Tortoise TTS to RVC (Requires a beefy GPU like 3090 or 40 series)
 
 :heavy_check_mark: Easy customization for personalities of the AI assistants, with small funtionality variations of the assistants
 
@@ -78,7 +78,7 @@ useEL = False
 usewhisper = True
 ```
 
-#### The 5-ish variables you can modify:
+#### The 5-ish variables you can modify (OUTDATED):
 
 1. You set the ```foldername``` of where the conversations will be stored, this will be set in the conversations folder.
 2. You set the ```personality``` by inputing the name of your text file and then editting the contents of the txt file name that is specified.  What this does is "prime" the ChatGPT conversation and sets the **personality** of the bot.  All of your prompts must go in the prompts folder and I have some examples in there already.
@@ -89,4 +89,11 @@ usewhisper = True
 The other text below the 5 variables in the script are objects and function calls to set-up the voice assisant using the class and function in the voice_assistant module.
 
 Most of the functions in the voice_assistant module have docstrings that you can read to clairfy what it does, but I'm still working on making it more clear.
+
+## Acknowledgements
+Thanks to the following projects and orgs for making this possible:
+- Openai for chatGPT API and whisper
+- mrq for the Ai voice cloning TTS implementation using Neonbjb's Tortoise TTS
+- rvc for the wonderful v2v capabilities
+- more to be listed.
 
