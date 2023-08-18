@@ -10,6 +10,7 @@ personality = "roleplay"
 voicename = "Rem"
 tts = "rvc"
 speech_recog = "whisper"
+rvc_model_path = "rvc_model/mumei.pth"
 
 # removed the block here that was meant for a pyinstaller exe due to the exe files not working properly
 
@@ -24,7 +25,8 @@ _kokoro = kokoro.Kokoro(personality=personality_dir,
                 save_folderpath=foldername_dir,
                 voice_name=voicename,
                 tts=tts,
-                speech_recog=speech_recog
+                speech_recog=speech_recog,
+                rvc_model_path = rvc_model_path
                 )
 
 assistant = assistant_p.AssistantP(_kokoro)

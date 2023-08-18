@@ -2,12 +2,12 @@ delimiter : "\n"
 emotion : "None"
 custom_emotion : ""
 voice_name : "mumei_nanashi"
-audio_file : ""
+audio_file : "mumei_nanashi.wav"
 voice_chunks : 0
 candidates : 1
 seed : 0
 samples : 2
-iterations : 25
+iterations : 32
 temperature : 1
 diffusion_sampler: "P"
 pause_size : 8

@@ -41,6 +41,8 @@ class Tortoise_API:
 
         while attempt_count < max_attempts:
             try:
+                if attempt_count == 3:
+                    sentence = "My AI is broken, someone please contact Jarod"
                 print(f"Calling API with sentence: {sentence}")
                 response = requests.post("http://127.0.0.1:7860/run/generate", json={
                     "data": [

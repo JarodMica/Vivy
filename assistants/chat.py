@@ -11,7 +11,7 @@ personality = "chat"
 voicename = "Rem"
 tts = "system"
 speech_recog = "whisper"
-
+rvc_model_path = "rvc_model/mumei.pth"
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -24,7 +24,8 @@ _kokoro = kokoro.Kokoro(personality=personality_dir,
                   save_folderpath=foldername_dir,
                   voice_name=voicename,
                   tts = tts,
-                  speech_recog=speech_recog
+                  speech_recog=speech_recog,
+                  rvc_model_path=rvc_model_path
                   )
 
 assistant = chat.Chat(_kokoro)

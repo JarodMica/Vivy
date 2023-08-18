@@ -1,4 +1,12 @@
 # Changelog
+
+## 8/18/2023
+Removed manual RVC installation, instead, now using the packaged version on my Github.  Run through the installation there.
+- Modifed the generate_voice function in Kokoro to now use rvc_convert, everything is handled there in the package
+    - Note to self: functions pretty much the same, but still need to check for bugs
+- Added a rvc_model_path parameter that is now necessary in order to run an RVC voice.  This needs to get placed inside of the rvc_model folder which is located at the top most level directory at the current moment
+- rmvpe.pt and hubert_base.pt NEED to be placed in the top most level directory for RVC to work.
+
 ## 7/16/2023
 Made some enhancements for the AI Streamer and tried off stream, but the generations were STUPID slow.  Originally, I had it done in another queue and this queue was closed after running RVC.  This caused RVC to be unloaded each time, making it take SOO long.  I was wondering why it worked so well in assistantp.py after it started going and this was why...
 - The queue now is instantiated in the __init__ part of kokoro along with the other queues.  Then, when it's needed I check inside of generate_voice if the queue has already been started and if not, it'll start this queue.
@@ -20,6 +28,9 @@ Continuing work on the RVC integration, this caused me a huge headache today as 
 ## 7/9/2023
 Starting to work on integrating RVC into the pipeline for tortoise, some notes to take:
 - Added an ```rvc``` folder into the ```package``` that can be installed by navigating into the RVC directory with ```pip install -e .```.  The current commit # for RVC is: 211e13b80a4bf13d683f199d75a2f88dd50b7444
+    - Going back to my notes, I deleted the pyproject.toml file and created a basic setup.py file to make it installable (the toml file was creating issues as that's for the poetry install)
+    - The folder was renamed rvc after cloning it
+    - To actually install it, you'll need all of the RVC requirements already installed
 - Added an ```rvc_infer.py``` file that can be used to convert audio into an RVC trained voice based on myinferer.py from the RVC HF
 - Added an ```rvc.yaml``` file that is used to configure RVC settings
 - Changed up the audio generation logic in ```generate_voice``` as it wasn't working as I had intended for tortoise and rvc.  Ended up needing to open up async_play in another thread and putting audio paths into a queue to be played

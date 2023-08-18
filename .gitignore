@@ -5,6 +5,8 @@ assistants/keys.txt
 assistants/keys.yaml
 batch_to_exe.txt
 interview.spec
+hubert_base.pt
+rmvpe.pt
 
 #ignore filetype
 *.spec
@@ -24,3 +26,4 @@ venv/
 .venv/
 assistants/package/rvc/
 assistants/package/output/
+assistants/prompts/myprompts/

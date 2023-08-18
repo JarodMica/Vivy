@@ -33,22 +33,35 @@ class AI_Streamer:
 
         self.audio_lock = threading.Lock()
 
+        # Create an event to signal that the end command has been received
+        self.end_received = threading.Event()
+
     def run(self):
         print("Starting up!")
         threads = []
-        for func in [self.retrieve_comments, self.gpt_generation, self.separate_sentence, self.tts_generation, self.read_audio]:
+        for func in [self.retrieve_comments, self.gpt_generation, self.separate_sentence, 
+                     self.tts_generation, self.read_audio, self.handle_personal_input]:
             t = threading.Thread(target=func)
             t.start()
             threads.append(t)
 
         time.sleep(0.1)
 
+    # Handle personal sentence input in a separate thread
+    def handle_personal_input(self):
+        while not self.end_received.is_set():
+            personal_sentence = input("Enter your personal sentence (or 'this is the end' to stop): ")
+            if personal_sentence.lower() == "this is the end":
+                self.gpt_generation_queue.put(f"User said: {personal_sentence}")
+                self.end_received.set()
+            else:
+                self.gpt_generation_queue.put(f"User said: {personal_sentence}")
+
     def retrieve_comments(self):
-        while True:
+        while not self.end_received.is_set():
             if not self.youtube.msg_queue.empty():
                 msg = self.youtube.msg_queue.get()
                 print(f"{msg.datetime} [{msg.author.name}]- {msg.message}")
-                # Process the message through your chatGPT and tortoise, and send it to the TTS API
                 complete_message = (f"{msg.author.name} said: {msg.message}")
                 self.gpt_generation_queue.put(complete_message)
             
@@ -59,7 +72,6 @@ class AI_Streamer:
                 self.kokoro.messages.append({"role" : "user" , "content" : comment})
                 response = self.kokoro.response_completion()
                 self.separate_sentence_queue.put(response)
-
 
     def separate_sentence(self):
         while True:

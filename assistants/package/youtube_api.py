@@ -17,8 +17,12 @@ class YoutubeAPI:
         start_time = time.time()
         while True:
             for c in self.chat.get().sync_items():
-                if len(c.message) <= 130:  # Only append messages that are 130 characters or less
-                    self.msg_list.append(c)
+                if "!vivy" in c.message:
+                    message = c.message.replace("!vivy", "").strip()  # remove "!vivy" from the message
+                    # Only append messages that are 130 characters or less and contain "!vivy"
+                    if len(message) <= 130:
+                        c.message = message
+                        self.msg_list.append(c)
             if time.time() - start_time >= self.collection_cycle_duration:
                 if not self.msg_queue.full() and self.msg_list:
                     chosen_msg = random.choice(self.msg_list)
@@ -26,6 +30,7 @@ class YoutubeAPI:
                     self.last_add_time = time.time()  # update the last add time
                 start_time = time.time()
                 self.msg_list = []
+
             # Remove the first item in the queue if more than 40 seconds have passed since the last addition
             if time.time() - self.last_add_time > 80:
                 self.clear_queue()

@@ -13,13 +13,13 @@ from multiprocessing import Process
 from .assistant_utils import *
 from .tortoise_api import Tortoise_API
 from elevenlabslib import *
-from .rvc_infer import rvc_run
+from rvc_infer import rvc_convert
 
 # Note to self, refactor code to use some type of list and index what TTS to use
-def rvc_queue(q, done_q):
+def rvc_queue(q, done_q, rvc_model_path):
     while True:  # Could create zombie processes
         audio_path, opt_dir = q.get()
-        rvc_run(audio_path, opt_dir)
+        rvc_convert(model_path=rvc_model_path,input_path=audio_path, output_dir_path=opt_dir)
         done_q.put(True)  # Signal that we're done processing this item
 
 def worker(queue, done_event):
@@ -62,7 +62,8 @@ class Kokoro:
                 tts:str = "default",
                 speech_recog:str = "google",
                 keyword:str = 'hey',
-                tortoise_autoplay:bool = True
+                tortoise_autoplay:bool = True,
+                rvc_model_path=None
                 ):
         '''
         Initialize the ChatGPT class with all of the necessary arguments
@@ -75,6 +76,7 @@ class Kokoro:
             device_index (int) : microphone device to use (0 is default)
             gptmodel (str) : choose the openai GPT model to use
             tts (str) : choose which tts engine to use
+            speech_recog (str) : determine what speech recognition to use (google or whisper)
             keyword(str) : keyword to start a conversation
             tortoise_autoplay (bool) : determine if tortoise autoplay's audio
         '''
@@ -106,6 +108,7 @@ class Kokoro:
                             " as what's on the Eleven Labs page.  Capitilzation matters here.")
                     self.voice = self.user.get_voices_by_name("Rachel")[0] 
             elif self.tts == "tortoise" or "rvc":
+                self.rvc_model_path = rvc_model_path
                 self.tortoise = Tortoise_API()
                 self.tortoise_autoplay = tortoise_autoplay
                 # Queues for tortoise
@@ -125,8 +128,6 @@ class Kokoro:
             self.voices = self.engine.getProperty('voices')
             self.engine.setProperty('voice', self.voices[1].id) # 0 for male, 1 for female
 
-        
-
         # Mic Set-up
         self.r = sr.Recognizer()
         self.r.dynamic_energy_threshold=False
@@ -140,8 +141,6 @@ class Kokoro:
         self.messages  = [
             {"role": "system", "content": f"{self.mode}"}
         ]
-
-
 
  # Methods the assistants rely on------------------------------------------------------------------------------------------------------------------
 
@@ -212,8 +211,6 @@ class Kokoro:
         print(f"\n{response}\n")
         return response
 
-    
-
 
     def generate_voice(self, sentence):
         '''
@@ -263,7 +260,7 @@ class Kokoro:
                 sentences = filter_paragraph(sentence)
                 for sentence in sentences:
                     audio_path = self.tortoise.call_api(sentence)
-                    rvc_run(audio_path, opt_dir)
+                    rvc_convert(model_path=self.rvc_model_path, input_path=audio_path, output_dir_path=opt_dir)
                     
                     # Start the worker thread if it's not already running
                     if self.worker_thread is None or not self.worker_thread.is_alive():
@@ -278,9 +275,9 @@ class Kokoro:
             else:
                 audio_path = self.tortoise.call_api(sentence)
 
-                # Create a Process for rvc_run
+                # Create a Process for rvc_convert
                 if self.proc is None or not self.proc.is_alive():
-                    self.proc = multiprocessing.Process(target=rvc_queue, args=(self.q, self.done_q))
+                    self.proc = multiprocessing.Process(target=rvc_queue, args=(self.q, self.done_q, self.rvc_model_path))
                     self.proc.start()  # Starts the new process
                 self.q.put((audio_path, opt_dir))
                 
