@@ -10,13 +10,13 @@ Most recent: [https://youtu.be/0qpar5R1VA4](https://youtu.be/0qpar5R1VA4)
 
 ## Features
 
-:heavy_check_mark: Voice recognition and voice responses
+- [X]  Voice recognition and voice responses
 
-:heavy_check_mark: Integration with ChatGPT for responses and ElevenLabs for natural sounding text-to-speech
+- [X] Integration with ChatGPT for responses and ElevenLabs for natural sounding text-to-speech
 
-:heavy_check_mark: Easy customization for personalities of the AI assistants, with funtionality variations of the assistants
+- [X] Easy customization for personalities of the AI assistants, with funtionality variations of the assistants
 
-:heavy_check_mark: Local conversation history stored for your own information (assistant does not reference them yet)
+- [X] Local conversation history stored for your own information (assistant does not reference them yet)
 
 ## Enhancements in the Pipeline
 
